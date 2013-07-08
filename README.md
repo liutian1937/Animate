@@ -1,0 +1,4 @@
+Animate
+=======
+
+Javascript Animate Library
