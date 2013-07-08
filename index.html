@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>html</title>
+<body>
+	
+
+	<div id="a" style="width:40px;height:40px;background:#db4f33;box-shadow:0px 0px 10px rgba(0,0,0,0.3);border-radius:50px;position:absolute;left:10px;"></div>
+	
+<script>
+try{
+	var a = document.getElementById('a');
+	Animate(a).move({'left':'30px'});
+}catch(ex){
+	console.log(ex.error);
+}
+
+(function(){
+	var Unit = (function () {
+		var style = document.documentElement.style, self = {};
+		//each函数，封装for循环
+		function _each (arr, fn) {
+			var i = 0, len = arr.length;
+			for (; i < len; i += 1){
+				fn(arr[i]);
+			}
+		};
+		//获取css3前缀
+		var _prefix = (function () {
+			var head = ['t', 'webkitT', 'MozT', 'msT', 'OT'], transform, ret;
+			_each(head, function (val) {
+				transform = val + 'ransform';
+				if (transform in style) {
+					ret = val.substr(0,val.length - 1);
+				}
+			});
+			return ret;
+		})();
+		//扩展函数，克隆对象属性
+		self.extend = function (target, obj) {
+			for (var i in obj) {
+				target[i] = obj[i];
+			}
+		};
+		//拼接css3属性，并返回
+		function _prefixStyle (style) {
+			if ( _prefix === false ) return false;
+			if ( _prefix === '' ) return style;
+			return _prefix + style.charAt(0).toUpperCase() + style.substr(1);
+		};
+		
+		self.extend(self, {
+			Css3 : _prefixStyle('transition'),
+			Transform : _prefixStyle('transform'),
+			Duration : _prefixStyle('transitionDuration'),
+			TimingFunction : _prefixStyle('transitionTimingFunction')
+		});
+		
+		return self;
+	})();
+	
+	var Animate = function (obj) {
+		if (this instanceof Animate) {
+			return new Animate (obj);
+		};
+		this.step = {}; //按照顺序执行
+	};
+	Animate.prototype = {
+		move : function (params) {
+			
+		}
+	};
+	window.Animate = Animate();
+})();
+	
+</script>
+	
+</body>
+</html>
