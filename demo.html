@@ -1,0 +1,323 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>html</title>
+<body>
+	
+<style>
+#a{width:40px;height:40px;background:#db4f33;box-shadow:0px 0px 10px rgba(0,0,0,0.3);border-radius:50px;position:absolute;left:220px;top:1em;}
+</style>
+
+<input type="button" value="play" onclick="play()" />
+<input type="button" value="pause" onclick="pause()" />
+<input type="button" value="continue" onclick="continued()" />
+<div id="a" style=""></div>
+	
+<script>
+
+	
+(function(){
+	var Unit = (function () {
+		var style = document.documentElement.style, self = {};
+		//each函数，封装for循环
+		function _each (arr, fn) {
+			var i = 0, len = arr.length;
+			for (; i < len; i += 1){
+				fn(arr[i]);
+			}
+		};
+		//获取css3前缀
+		var _prefix = (function () {
+			var head = ['t', 'webkitT', 'MozT', 'msT', 'OT'], transform, ret;
+			_each(head, function (val) {
+				transform = val + 'ransform';
+				if (transform in style) {
+					ret = val.substr(0,val.length - 1);
+				}
+			});
+			return ret;
+		})();
+		//扩展函数，克隆对象属性
+		self.extend = function (target, obj) {
+			for (var i in obj) {
+				target[i] = obj[i];
+			}
+		};
+		//拼接css3属性，并返回
+		function _prefixStyle (style) {
+			if ( _prefix === '' ) return style;
+			if (! _prefix ) return false;
+			return _prefix + style.charAt(0).toUpperCase() + style.substr(1);
+		};
+		
+		self.extend(self, {
+			css3 : _prefixStyle('transition'),
+			Transform : _prefixStyle('transform'),
+			Property : _prefixStyle('transitionProperty'),
+			Duration : _prefixStyle('transitionDuration'),
+			TimingFunction : _prefixStyle('transitionTimingFunction')
+		});
+		return self;
+	})();
+	
+	var Animate = function (elem) {
+		if (!(this instanceof Animate)) {
+			return new Animate (elem);
+		};
+		this.elem = elem || {};
+		this.init();
+	};
+	Animate.prototype = {
+		init : function () {
+			//初始化数据
+			this.step = []; //按照顺序执行
+			this.current = 0; //当前执行的第几个动作
+			this.total = 0; //一共几个动作
+			this.speeds = {
+				normal : 400 ,
+				fast : 200 ,
+				slow : 600
+			}; //默认的动画执行时间
+			this.easing = 'linear'; //默认动作
+			
+			this.remainderTime = 0;//剩余时间
+			this.timer = null; //计时器对象，setTimeout,setInterval
+			this.isAnimate = false; //是否有动画
+			this.startStyle = {}; //动画开始时的样式
+			this.endStyle = {}; //结束时的样式
+		},
+		move : function () {
+			var _this = this, arg = arguments, len = arg.length;
+			_this.params = {};
+			if(typeof arg[0] === 'object'){
+				//检查move中传入的参数
+				_this.params.style = arg[0];
+			}else{
+				console.log('参数不正确');
+				return false;
+			};
+			
+			//设置回调
+			_this.params.callback = (arg[len - 1] && typeof arg[len - 1] === 'function') ?
+			arg[len - 1] :
+			function () {};
+			
+			//设置速度
+			_this.params.speed = (arg[1] && typeof arg[1] === 'number') ? 
+			arg[1] :
+			(function () {
+				return (typeof arg[1] === 'string' && arg[1] in _this.speeds) ? 
+				_this.speeds[arg[1]] :
+				_this.speeds['normal'] ;
+			})();
+			
+			//设置动画效果
+			_this.params.easing = (len > 1) ? 
+			(function () {
+				return (arg[2] && typeof arg[2] === 'string') ? 
+				arg[2] :
+				(function () {
+					return (typeof arg[1] === 'string' && !(arg[1] in _this.speeds)) ?
+					arg[1] :
+					_this.easing ;
+				})();
+			})() :
+			_this.easing ;
+			
+			_this._act(_this.params);
+			
+			return _this;
+		},
+		play : function () {
+			//暂停后继续
+			var _this = this;
+			if(_this.isAnimate || _this.remainderTime <= 0){
+				return false;
+			};
+			if(Unit.css3){
+				_this._transition(_this.remainderTime,_this.params.easing);
+				_this._css3(_this.endStyle,true); //继续动画
+			}else{
+				_this._compute(_this.params.style);
+				_this._run(_this.remainderTime,_this.params.easing);
+			}
+		},
+		pause : function () {
+			//暂停动画
+			var _this = this;
+			if(_this.remainderTime > 0){
+				_this.isAnimate = false;
+				
+				if(Unit.css3){
+					for (var attr in _this.startStyle){
+						_this.elem.style[attr] = _this._getStyle(_this.elem, attr);
+					};				
+					clearInterval(_this.timer); //停止计时器
+				}else{
+					clearTimeout(_this.timer);//停止计时器
+				}
+			};
+		},
+		process : function () {
+			//动画执行过程中
+			console.log(window.getComputedStyle(this.elem, null)['top']);
+		},
+		_act : function (params) {
+			//响应动画的事件，css3或者js实现的中继
+			var _this = this;
+			
+			if(_this.isAnimate){
+				return false; //有动画执行，返回
+			};
+			
+			_this.remainderTime = params.speed; //剩余时间
+			
+			if(Unit.css3){
+				//支持css3,设置transition
+				_this._transition(params.speed,params.easing);
+				_this._css3(params.style);
+			}else{
+				_this._compute(params.style);
+				_this._run(params.speed,params.easing);
+			}
+		},
+		_transition : function (speed,easing){
+			//css3改变transition
+			var _this = this;
+			_this.elem.style[Unit.Property] = 'all' ;
+			_this.elem.style[Unit.Duration] = speed + 'ms';
+			_this.elem.style[Unit.TimingFunction] = easing || 'linear';
+			
+			_this.timer = setInterval(function(){
+				_this.isAnimate = true;
+				_this.remainderTime = (_this.remainderTime > 0) ? _this.remainderTime - 10 : 0 ; //剩余时间递减
+				_this.process(); //进程执行中...
+				if(_this.remainderTime <= 0){
+					//动画结束
+					_this.isAnimate = false;
+					_this.remainderTime = 0;
+					_this.elem.style[Unit.Duration] = '0ms';
+					clearInterval(_this.timer);
+				}
+			},10);
+		},
+		_css3 : function(val, pause){
+			//设置css3的属性值
+			var _this = this, startData, endData;
+			for(var attr in val){
+				if(pause){
+					_this.elem.style[attr] = val[attr];
+				}else{
+					startData = _this._getStyle(_this.elem, attr); //初始数据				
+					endData = (val[attr].match(/^[\-|\+]=?/)) ? 
+					(function () {
+						return _this._conversion(startData) + _this._conversion(val[attr]) + 'px';
+					})() :
+					val[attr] ;
+					_this.elem.style[attr] = endData;
+					_this.startStyle[attr] = startData;
+					_this.endStyle[attr] = endData;
+				};
+			};
+		},
+		_compute : function (val) {
+			//不支持css3,计算并缓存开始结束的数据
+			var _this = this, startData, endData, processData;
+			for(var attr in val){
+				if(attr === 'opacity'){
+					startData = (_this._getStyle(_this.elem, 'filter')).replace(/[^0-9]/ig,"") || 100;
+					processData = val[attr]*100;
+				}else{
+					startData = _this._conversion(_this._getStyle(_this.elem, attr));
+					processData = (Math.abs(parseInt(val[attr].replace(/=|px|em/g,''))) >= 0) ? _this._conversion(val[attr]) : val[attr];
+				}
+				endData = (val[attr].match(/^[\-|\+]=?/)) ? startData + processData : processData;
+				_this.startStyle[attr] = startData;
+				_this.endStyle[attr] = endData;
+			};
+		},
+		_run : function(speed, easing){
+			//用tween实现动画效果
+			var _this = this, t = 0, d = parseInt(speed/10), tween = (Tween[easing]) ? Tween[easing] : Tween['linear'];
+			function Run(){
+				if(t < d){
+					t++;
+					_this.isAnimate = true; //动画执行
+					for (var j in _this.startStyle){				
+						if(typeof _this.endStyle[j] === 'number'){
+							if(j === 'opacity'){
+								_this.elem.style.filter = 'alpha(opacity='+Math.ceil(tween(t,_this.startStyle[j],_this.endStyle[j]-_this.startStyle[j],d))+')';
+							}else{
+								_this.elem.style[j] = Math.ceil(tween(t,_this.startStyle[j],_this.endStyle[j]-_this.startStyle[j],d)) + 'px';
+							}
+						};
+					};
+					_this.timer = setTimeout(Run, 10);
+				}else{
+					
+					clearTimeout(_this.timer); //清除计时器
+					_this.isAnimate = false; //设置动画状态
+					
+					//设置最终效果
+					for (var k in _this.endStyle){
+						if(typeof _this.endStyle[j] === 'number'){
+							if(j === 'opacity'){
+								_this.elem.style.filter = 'alpha(opacity='+_this.endStyle['opacity']+')';
+							}else{
+								_this.elem.style[k] = _this.endStyle[k] + 'px';
+							}
+						}else{
+							_this.elem.style[k] = _this.endStyle[k];
+						}
+					};
+					
+				};
+				_this.remainderTime = (_this.remainderTime > 0) ? _this.remainderTime - 10 : 0 ; //剩余时间递减
+				
+				console.log(_this.remainderTime);
+			};
+			Run();
+		},
+		_getStyle : function (elem, attr) {
+			return (elem.currentStyle? elem.currentStyle : window.getComputedStyle(elem, null))[attr];
+		},
+		_conversion : function (num) {
+			//返回带正负的数值，并换算单位为PX
+			num = num.replace(/=/g,'');
+			return num.match(/em/) ? 
+			parseInt(num,10)*16 :
+			parseInt(num,10) ;
+		}
+	};
+	
+	//动画算法
+	var Tween = {
+		'linear': function(t,b,c,d){ return c*t/d + b; },
+		'ease-in': function(t, b, c, d) { return -c * Math.cos(t/d *(Math.PI/2)) + c + b; },
+		'ease-out': function(t, b, c, d) { return c * Math.sin(t/d *(Math.PI/2)) + b; },
+		'ease-in-out': function(t, b, c, d) { return -c/2 *(Math.cos(Math.PI*t/d) - 1) + b; }
+	};
+
+	window.Animate = Animate;
+})();
+
+
+var a = document.getElementById('a'), b;
+
+function play(){
+	b = Animate(a).move({left:'-10px',top:'20em',height:'20px',backgroundColor:'#0f0',opacity:'0.3'},2000,'ease-in',function(){
+		alert ('ff');
+	});
+}
+function pause(){
+	b.pause();
+}
+
+function continued(){
+	b.play();
+}
+</script>
+	
+</body>
+</html>
