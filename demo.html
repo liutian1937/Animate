@@ -126,7 +126,7 @@
 				//检查animate中传入的参数
 				params.style = arg[0];
 			}else{
-				console.log('参数不正确');
+				//console.log('参数不正确');
 				return false;
 			};
 			
@@ -234,7 +234,7 @@
 	Animate.prototype = {
 		init : function (val) {
 			//初始化设置，缓存开始结束时的style样式
-			var _this = this, startData, endData;
+			var _this = this, startData, endData, hasProperty = true;
 			_this.remainderTime = _this.params.speed; //剩余时间
 			_this.replay = false; //是否是重新开始的动画
 			_this.startStyle = {}; //动画开始时的样式
@@ -258,13 +258,21 @@
 					if(attr === 'opacity'){
 						startData = parseInt((_this._getStyle(_this.elem, 'filter')).replace(/[^0-9]/ig,"")) || 100;
 						processData = val[attr]*100;
+						hasProperty = true;
 					}else{
-						startData = _this._conversion(_this._getStyle(_this.elem, attr));
-						processData = (Math.abs(parseInt(val[attr].replace(/=|px|em/g,''))) >= 0) ? _this._conversion(val[attr]) : val[attr];
-					}
-					endData = (val[attr].match(/^[\-|\+]=?/)) ? startData + processData : processData;
-					_this.startStyle[attr] = startData;
-					_this.endStyle[attr] = endData;
+						if(_this._getStyle(_this.elem, attr)){
+							hasProperty = true;
+							startData = _this._conversion(_this._getStyle(_this.elem, attr));
+							processData = (Math.abs(parseInt(val[attr].replace(/=|px|em/g,''))) >= 0) ? _this._conversion(val[attr]) : val[attr];
+						}else{
+							hasProperty = false;
+						}
+					};
+					if ( hasProperty ) {
+						endData = (val[attr].match(/^[\-|\+]=?/)) ? startData + processData : processData;
+						_this.startStyle[attr] = startData;
+						_this.endStyle[attr] = endData;
+					};
 				};
 				_this.pauseStyle = _this.startStyle;
 			};
@@ -288,7 +296,7 @@
 				_this._transition(_this.remainderTime,_this.params.easing);
 				_this._css3(_this.endStyle); //继续动画
 			}else{
-				_this._compute(_this.params.style);
+				_this._compute(_this.endStyle);
 				_this._run(_this.remainderTime,_this.params.easing);
 			};
 		},
@@ -434,10 +442,13 @@
 		},
 		_conversion : function (num) {
 			//返回带正负的数值，并换算单位为PX
+			var _this = this;
 			num = num.replace(/=/g,'');
-			return num.match(/em/) ? 
-			parseInt(num,10)*16 :
-			parseInt(num,10) ;
+			if(num.match(/\%/)){
+				var width = parseInt(_this.elem.parentNode.scrollWidth);
+				return parseInt(num)*width/100;
+			};
+			return num.match(/em/) ? parseInt(num,10)*16 : parseInt(num,10) ;
 		}
 	};
 	
@@ -455,13 +466,14 @@
 
 
 var a = document.getElementById('a'), b, result = document.getElementById('result');
-b = Jwalk(a).animate({left:'40px',top:'100px',backgroundColor:'#333'},500,'linear',function(data){
+b = Jwalk(a).animate({left:'10%',top:'100px',backgroundColor:'#333',transform:'rotate(30deg)'},500,'linear',function(data){
 		switch (data.status){
 			case 'start' : 
 				result.innerHTML += '动作1开始<br/>';
 				break;
 			case 'process' :
-				console.log('动作1进行中');
+				//console.log('动作1进行中');
+				console.log(data.result.left);
 				break;
 			case 'pause' :
 				result.innerHTML += '动作1暂停喽<br/>';
@@ -476,7 +488,7 @@ b = Jwalk(a).animate({left:'40px',top:'100px',backgroundColor:'#333'},500,'linea
 				result.innerHTML += '动作2开始<br/>'
 				break;
 			case 'process' :
-				console.log('动作2进行中');
+				//console.log('动作2进行中');
 				break;
 			case 'pause' :
 				result.innerHTML += '动作2暂停喽<br/>';
@@ -485,13 +497,13 @@ b = Jwalk(a).animate({left:'40px',top:'100px',backgroundColor:'#333'},500,'linea
 				result.innerHTML += '动作2结束<br/>';
 				break;
 		}
-	}).animate({top:'180px',left:'300px',backgroundColor:'#0f0'},500,function(data){
+	}).animate({top:'-10%',left:'300px',backgroundColor:'#0f0'},500,function(data){
 		switch (data.status){
 			case 'start' : 
 				result.innerHTML += '动作3开始<br/>'
 				break;
 			case 'process' :
-				console.log('动作3进行中');
+				//console.log('动作3进行中');
 				break;
 			case 'pause' :
 				result.innerHTML += '动作3暂停喽<br/>';
@@ -506,7 +518,7 @@ b = Jwalk(a).animate({left:'40px',top:'100px',backgroundColor:'#333'},500,'linea
 				result.innerHTML += '动作4开始<br/>'
 				break;
 			case 'process' :
-				console.log('动作4进行中');
+				//console.log('动作4进行中');
 				break;
 			case 'pause' :
 				result.innerHTML += '动作4暂停喽<br/>';
