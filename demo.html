@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -6,13 +6,15 @@
 <body>
 	
 <style>
-#a{width:40px;height:40px;background:#db4f33;box-shadow:0px 0px 10px rgba(0,0,0,0.3);border-radius:50px;position:absolute;left:220px;top:1em;}
+#a{width:40px;height:20px;background:#db4f33;box-shadow:0px 0px 10px rgba(0,0,0,0.3);border-radius:50px;position:absolute;left:220px;top:1em;}
 </style>
 
 <input type="button" value="play" onclick="play()" />
 <input type="button" value="pause" onclick="pause()" />
 
 <div id="a" style=""></div>
+
+<div id="result" style="width:100px;height:300px;background:#f5f5f5;border:5px solid #ddd;position:absolute;left:20px;top:100px;font-size:12px;color:#333;line-height:20px;overflow:auto;"></div>
 	
 <script>
 
@@ -66,24 +68,59 @@
 			return new Jwalk (elem);
 		};
 		this.elem = elem || {};
-		this.init();
+		this._init(); //初始化
 	};
 	Jwalk.prototype = {
-		init : function(){
-			//初始化数据
+		_init : function () {
 			var _this = this;
-			_this.speeds = {
+			this.speeds = {
 				normal : 400 ,
 				fast : 200 ,
 				slow : 600
 			}; //默认的动画执行时间
-			_this.easing = 'linear'; //默认动作
-			_this.isAnimate = false; //是否有动作在执行
-			_this.stepArray = []; //按照顺序执行
-			_this.current = 0; //当前执行的第几个动作
-			_this.total = 0; //一共几个动作
+			this.easing = 'linear'; //默认动作
+			this.isAnimate = false; //是否有动作在执行
+			this.stepArray = []; //缓存动画数组
+			this.current = 0; //当前执行的第几个动作
+			this.total = 0; //一共几个动作
+			this.once = false; //一个循环是否结束
+			_this.control = (function(){
+				//用闭包保存动作
+				return {
+					isProcess : true, //是否开启时时进程
+					process : function (){
+						_this.isAnimate = true;
+					},
+					end : function () {
+						_this.isAnimate = false;
+						if(_this.stepActive){
+							_this.once = true;
+							//如果单步执行激活，不触发end事件
+							return false;
+						};
+						(_this.current < _this.total - 1) ? (function(){
+							_this.current += 1;
+							_this.play();
+						})() : (function(){
+							_this.current = _this.total - 1;
+							if(_this.infinite){
+								_this.replay();
+							}else{
+								_this.once = true; //一次循环结束
+							};
+						})();
+					}
+				}
+			})();
 		},
 		animate : function () {
+			/*
+				animate完成下列事件：
+				1.接收参数
+				2.缓存至params对象
+				3.实例化Animate，传参params
+				4.动画实例加入数组
+			*/
 			var _this = this, arg = arguments, len = arg.length, params = {};
 			if(typeof arg[0] === 'object'){
 				//检查animate中传入的参数
@@ -120,58 +157,78 @@
 			})() :
 			_this.easing ;
 			
-			_this.control = (function(){
-				//用闭包保存动作
-				return {
-					process : function (){
-						_this.isAnimate = true;
-					},
-					end : function () {
-						_this.isAnimate = false;
-						(_this.current < _this.total - 1) ? (function(){
-							_this.current += 1;
-							_this.play();
-						})() : (function(){
-							_this.current = _this.total - 1;
-						})();
-					}
-				}
-			})();
-			
 			_this.stepArray.push(new Animate(_this.elem, params, _this.control));
 			_this.total += 1;
 			return _this; //链式操作
 		},
 		play : function () {
-			console.log(this.current);
+			if(this.once){
+				return false;
+			};
 			this.isAnimate = true;
-			this.stepArray[this.current].play();
+			if(!this.newStepArray){
+				this.newStepArray = this.stepArray.concat();
+			};
+			this.newStepArray[this.current].play();
 		},
 		pause : function () {
 			this.isAnimate = false;
-			this.stepArray[this.current].pause();
+			if(!this.newStepArray){
+				return false;
+			};
+			this.newStepArray[this.current].pause();
 		},
-		step : function (num) {
+		step : function () {
 			//返回第num个动作
-			this.current = num;
+			var i = 0, len, queue;
+			this.once = false;
+			if(arguments.length > 1){
+				this.stepActive = false; //关闭单步执行
+				this.newStepArray = [];
+				queue = Array.prototype.slice.call(arguments,0);
+				for (;i < queue.length ; i += 1) {
+					//需要验证数组是否存在
+					if(this.stepArray[queue[i]]){
+						this.newStepArray.push(this.stepArray[queue[i]]);
+					}
+				};
+				this.total = this.newStepArray.length;
+			}else{
+				this.once = false;
+				this.stepActive = true; //单步执行激活
+				this.newStepArray = this.stepArray.concat();
+				this.total = this.newStepArray.length;
+				if( typeof arguments[0] === 'number' && arguments[0] < this.total ) {
+					this.current = Math.ceil(arguments[0]);
+				};
+			};
 			return this;
+		},
+		replay : function () {
+			//重新开始一轮动画
+			this.current = 0;
+			this.once = false;
+			this.stepActive = false; //关闭单步执行
+			this.play();
+		},
+		cycle : function () {
+			this.current = 0;
+			this.once = false;
+			this.stepActive = false; //关闭单步执行
+			this.infinite = true; //可以循环
+			return this; //链式调用
 		}
 	};
 	
 	var Animate = function (elem, params, control) {
 		this.elem = elem;
 		this.params = params;
-
 		this.remainderTime = 0;//剩余时间
-		this.timer = null; //计时器对象，setTimeout,setInterval
 		this.isAnimate = false; //是否有动画
-		this.startStyle = {}; //动画开始时的样式
-		this.endStyle = {}; //结束时的样式
-		this.pauseStyle = {}; //动画执行过程中的样式，非css3
 		this.callback = this.params.callback;
 		this.control = control; //控制器，用来调用Jwalk的控制器
-		this.data = {}; //回调数据
 		this.replay = true; //是否是重新开始的动画
+		this.data = {}; //回调数据
 		//this.init(this.params.style);
 	};
 	Animate.prototype = {
@@ -180,6 +237,11 @@
 			var _this = this, startData, endData;
 			_this.remainderTime = _this.params.speed; //剩余时间
 			_this.replay = false; //是否是重新开始的动画
+			_this.startStyle = {}; //动画开始时的样式
+			_this.endStyle = {}; //结束时的样式
+			_this.pauseStyle = {}; //动画执行过程中的样式，非css3
+			_this.data = {}; //回调数据
+			
 			if(Unit.css3){
 				for(var attr in val){
 					startData = _this._getStyle(_this.elem, attr); //初始数据				
@@ -232,7 +294,14 @@
 		},
 		process : function () {
 			//动画执行过程中
-			//console.log(window.getComputedStyle(this.elem, null)['top']);
+			//如果开启了实时数据，进程执行过程中，返回数据
+			var _this = this;
+			_this.data.result = {}
+			for(var attr in _this.params.style){
+				_this.data.result[attr] = _this._getStyle(_this.elem, attr); //时时数据
+			};
+			_this.data.status = 'process';
+			_this.callback(_this.data);
 		},
 		pause : function () {
 			//暂停动画
@@ -266,8 +335,16 @@
 			_this.remainderTime = 0; //剩余时间置为0
 			//执行回调函数
 			_this.data.status = 'end';
+			
+			_this.callback(_this.data); //回调函数先执行
 			_this.control['end'](); //让Jwalk回调执行
-			_this.callback(_this.data);
+			_this._destory();
+		},
+		_destory : function () {
+			this.startStyle = null;
+			this.endStyle = null;
+			this.pauseStyle = null;
+			this.timer = null; //计时器对象，setTimeout,setInterval
 		},
 		_transition : function (speed,easing){
 			//css3改变transition
@@ -279,7 +356,10 @@
 			_this.timer = setInterval(function(){
 				_this.isAnimate = true;
 				_this.remainderTime = (_this.remainderTime > 0) ? _this.remainderTime - 20 : 0 ; //剩余时间递减
-				_this.process(); //进程执行中...
+				
+				if (_this.control.isProcess) {
+					_this.process(); //进程执行中...
+				};
 				if(_this.remainderTime <= 0){
 					//动画结束
 					clearInterval(_this.timer);
@@ -323,6 +403,11 @@
 						};
 					};
 					_this.timer = setTimeout(Run, 10);
+					
+					if (_this.control.isProcess) {
+						_this.process(); //进程执行中...
+					};
+					
 				}else{
 					//设置最终效果
 					for (var k in _this.endStyle){
@@ -369,30 +454,73 @@
 
 
 
-/*
-.animate({left:'+100px',top:'200px',height:'20px',backgroundColor:'#0f0',opacity:'0.3'},500,'linear',
-*/
-var a = document.getElementById('a'), b;
-b = Jwalk(a).animate({left:'400px',top:'400px',backgroundColor:'#0f0'},'fast','linear',function(data){
+var a = document.getElementById('a'), b, result = document.getElementById('result');
+b = Jwalk(a).animate({left:'40px',top:'100px',backgroundColor:'#333'},500,'linear',function(data){
 		switch (data.status){
 			case 'start' : 
-				//console.log('开始喽');
+				result.innerHTML += '动作1开始<br/>';
+				break;
+			case 'process' :
+				console.log('动作1进行中');
 				break;
 			case 'pause' :
-				//console.log('暂停喽');
+				result.innerHTML += '动作1暂停喽<br/>';
 				break;
 			case 'end' : 
-				//console.log('结束喽');
+				result.innerHTML += '动作1结束<br/>';
 				break;
 		}
-	}).animate({top:'100px',left:'100px',backgroundColor:'#db4f33'},'fast',function(data){
-		if(data.status == 'end'){
-			b.step(0).play();
+	}).animate({top:'+50px',left:'200px',backgroundColor:'#db4f33'},500,function(data){
+		switch (data.status){
+			case 'start' : 
+				result.innerHTML += '动作2开始<br/>'
+				break;
+			case 'process' :
+				console.log('动作2进行中');
+				break;
+			case 'pause' :
+				result.innerHTML += '动作2暂停喽<br/>';
+				break;
+			case 'end' : 
+				result.innerHTML += '动作2结束<br/>';
+				break;
+		}
+	}).animate({top:'180px',left:'300px',backgroundColor:'#0f0'},500,function(data){
+		switch (data.status){
+			case 'start' : 
+				result.innerHTML += '动作3开始<br/>'
+				break;
+			case 'process' :
+				console.log('动作3进行中');
+				break;
+			case 'pause' :
+				result.innerHTML += '动作3暂停喽<br/>';
+				break;
+			case 'end' : 
+				result.innerHTML += '动作3结束<br/>';
+				break;
+		}
+	}).animate({top:'-10px',left:'-30px',backgroundColor:'#ccc'},500,function(data){
+		switch (data.status){
+			case 'start' : 
+				result.innerHTML += '动作4开始<br/>'
+				break;
+			case 'process' :
+				console.log('动作4进行中');
+				break;
+			case 'pause' :
+				result.innerHTML += '动作4暂停喽<br/>';
+				break;
+			case 'end' : 
+				result.innerHTML += '动作4结束<br/>';
+				b.step(2).play();
+				break;
 		}
 	});
-	
+
 function play(){
-	b.play();
+	b.replay();
+	//b.step(1,2).cycle().play();
 }
 function pause(){
 	b.pause();
