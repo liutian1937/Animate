@@ -11,7 +11,7 @@
 
 <input type="button" value="play" onclick="play()" />
 <input type="button" value="pause" onclick="pause()" />
-
+<input type="button" value="reset" onclick="reset()" />
 <div id="a" style=""></div>
 
 <div id="result" style="width:100px;height:300px;background:#f5f5f5;border:5px solid #ddd;position:absolute;left:20px;top:100px;font-size:12px;color:#333;line-height:20px;overflow:auto;"></div>
@@ -20,26 +20,30 @@
 <script type="text/javascript" src="Jwalk.js"></script>
 <script>
 var a = document.getElementById('a'), b, result = document.getElementById('result');
-/*
+
 b = Jwalk(a).animate({left:'+100px',top:'100px',backgroundColor:'#333'},2000,'linear',function(data){
 		switch (data.status){
-			case 'start' : 
+			case 'start' :
+				console.log('开始1');
 				result.innerHTML += '动作1开始<br/>';
 				break;
 			case 'process' :
 				//console.log('动作1进行中');
-				console.log(data.result);
+				//console.log(data.result);
 				break;
 			case 'pause' :
+				console.log('暂停');
 				result.innerHTML += '动作1暂停喽<br/>';
 				break;
 			case 'end' : 
+				console.log('结束');
 				result.innerHTML += '动作1结束<br/>';
 				break;
 		}
 	}).animate({top:'+50px',left:'200px',backgroundColor:'#db4f33'},500,function(data){
 		switch (data.status){
-			case 'start' : 
+			case 'start' :
+				console.log('开始2');
 				result.innerHTML += '动作2开始<br/>'
 				break;
 			case 'process' :
@@ -55,6 +59,7 @@ b = Jwalk(a).animate({left:'+100px',top:'100px',backgroundColor:'#333'},2000,'li
 	}).animate({top:'-10%',left:'300px',backgroundColor:'#0f0'},500,function(data){
 		switch (data.status){
 			case 'start' : 
+				console.log('开始3');
 				result.innerHTML += '动作3开始<br/>'
 				break;
 			case 'process' :
@@ -70,6 +75,7 @@ b = Jwalk(a).animate({left:'+100px',top:'100px',backgroundColor:'#333'},2000,'li
 	}).animate({top:'-10px',left:'-30px',backgroundColor:'#ccc'},500,function(data){
 		switch (data.status){
 			case 'start' : 
+				console.log('开始4');
 				result.innerHTML += '动作4开始<br/>'
 				break;
 			case 'process' :
@@ -80,25 +86,30 @@ b = Jwalk(a).animate({left:'+100px',top:'100px',backgroundColor:'#333'},2000,'li
 				break;
 			case 'end' : 
 				result.innerHTML += '动作4结束<br/>';
-				b.step(2).play();
+				//b.step(2).play();
 				break;
 		}
 	});
-*/
 
+/*
 b = Jwalk(a).animate({left:'+200px',backgroundColor:'#FF7F00'})
 	.animate({left:'-150px',top:'+150px',backgroundColor:'#DB7093'})
 	.animate({top:'-200px',left:'+50px',backgroundColor:'#A4D3EE'})
 	.animate({left:'+50px',top:'+200px',backgroundColor:'#2E8B57'})
 	.animate({left:'-150px',top:'-150px',backgroundColor:'#DB4F33'});
+*/
 
-	b.cycle();
+b.step(0,1,2,3);
 function play(){
-	b.replay();
-	//b.step(1,2).cycle().play();
+	//b.play();
+	b.play();
 }
 function pause(){
 	b.pause();
+}
+
+function reset(){
+	b.reset();
 }
 
 </script>

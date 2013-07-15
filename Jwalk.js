@@ -47,54 +47,15 @@
 			return new Jwalk (elem);
 		};
 		this.elem = elem || {};
+		this.speeds = {
+			normal : 400 ,
+			fast : 200 ,
+			slow : 600
+		}; //默认的动画执行时间
+		this.easing = 'linear'; //默认动作
 		this._init(); //初始化
 	};
 	Jwalk.prototype = {
-		_init : function () {
-			var _this = this;
-			this.speeds = {
-				normal : 400 ,
-				fast : 200 ,
-				slow : 600
-			}; //默认的动画执行时间
-			this.easing = 'linear'; //默认动作
-			this.isAnimate = false; //是否有动作在执行
-			this.stepArray = []; //缓存动画数组
-			this.current = 0; //当前执行的第几个动作
-			this.total = 0; //一共几个动作
-			this.once = false; //一个循环是否结束
-			this.data = {}; //回调数据
-			this.finalStyle = null; //每次执行的最终结果
-			_this.control = (function(){
-				//用闭包保存动作
-				return {
-					isProcess : true, //是否开启时时进程
-					process : function (){
-						_this.isAnimate = true;
-					},
-					end : function () {
-						_this.isAnimate = false;
-						if(_this.stepActive){
-							_this.once = true;
-							//如果单步执行激活，不触发end事件
-							return false;
-						};
-						(_this.current < _this.total - 1) ? (function(){
-							_this.current += 1;
-							if(!_this.isPause)
-							_this.play();
-						})() : (function(){
-							_this.current = _this.total - 1;
-							if( !_this.isPause && _this.infinite){
-								_this.replay();
-							}else{
-								_this.once = true; //一次循环结束
-							};
-						})();
-					}
-				}
-			})();
-		},
 		animate : function () {
 			/*
 				animate完成下列事件：
@@ -113,9 +74,22 @@
 			};
 			
 			//设置回调
+			/*
 			params.callback = (arg[len - 1] && typeof arg[len - 1] === 'function') ?
 			arg[len - 1] :
 			function () {};
+			*/
+			
+			params.callback = (function(){
+				return function (data, fn) {
+					if(arg[len - 1] && typeof arg[len - 1] === 'function') {
+						arg[len - 1](data);
+					};
+					if(fn){
+						fn();
+					};
+				}
+			})();
 			
 			//设置速度
 			params.speed = (arg[1] && typeof arg[1] === 'number') ? 
@@ -148,18 +122,18 @@
 			_this.total += 1;
 			return _this; //链式操作
 		},
-		play : function () {
+		play : function (replay) {
 			var obj;
 			if(this.once || this.isAnimate){
 				return false;
 			};
 			this.isAnimate = true;
-			this.isPause = false;
 			if(!this.newStepArray){
 				this.newStepArray = this.stepArray.concat();
 			};
 			obj = this.newStepArray[this.current];
-			if (this.data.status === 'pause') {
+			if (!replay && this.data.status === 'pause') {
+				//如果不是replay，那么继续暂停时的动作
 				this._move(obj);
 			}else{
 				this._initStyle(obj, this.finalStyle);
@@ -167,11 +141,10 @@
 		},
 		pause : function () {
 			var obj, elem = this.elem;
-			this.isAnimate = false;
-			this.isPause = true;
-			if(!this.newStepArray || this.data.status === 'pause'){
+			if(!this.newStepArray || !this.isAnimate || this.data.status === 'pause'){
 				return false;
 			};
+			this.isAnimate = false;
 			obj = this.newStepArray[this.current];
 			
 			if( obj.remainderTime > 0 ){
@@ -208,7 +181,6 @@
 				};
 				this.total = this.newStepArray.length;
 			}else{
-				this.once = false;
 				this.stepActive = true; //单步执行激活
 				this.newStepArray = this.stepArray.concat();
 				this.total = this.newStepArray.length;
@@ -220,18 +192,88 @@
 		},
 		replay : function () {
 			//重新开始一轮动画
-			this.current = 0;
-			this.once = false;
-			this.stepActive = false; //关闭单步执行
-			this.play();
+			this._initData();
+			this.play(true);
+		},
+		reset : function () {
+			if(this.isAnimate){
+				return false;
+			};
+			this._initData();
+			for (var attr in this.elem.style){
+				if(this.elem.style[attr])
+				this.elem.style[attr] = this.beginStyle[attr];
+			};
 		},
 		cycle : function () {
+			//循环动画
 			this.current = 0;
 			this.once = false;
 			this.stepActive = false; //关闭单步执行
 			this.infinite = true; //可以循环
 			this.play();
 			//return this; //链式调用
+		},
+		_init : function () {
+			//初始化
+			var _this = this;
+			this.isAnimate = false; //是否有动作在执行
+			this.stepArray = []; //缓存动画数组
+			this.current = 0; //当前执行的第几个动作
+			this.total = 0; //一共几个动作
+			this.once = false; //一个循环是否结束
+			this.data = {}; //回调数据
+			this.finalStyle = null; //每次执行的最终结果
+			
+			this.beginStyle = {}; //动画开始的样式
+			for (var attr in this.elem.style){
+				this.beginStyle[attr] = _this._getStyle(_this.elem, attr);
+			};
+			
+			_this.control = (function(){
+				//用闭包保存动作
+				return {
+					isProcess : true, //是否开启时时进程
+					process : function (obj){
+						//动画执行过程中
+						//如果开启了实时数据，进程执行过程中，返回数据
+						_this.data.result = {}
+						for(var attr in obj.style){
+							_this.data.result[attr] = _this._getStyle(_this.elem, attr); //时时数据
+						};
+						_this.data.status = 'process';
+						//console.log(_this.data.result);
+						obj.callback(_this.data);
+					},
+					end : function (obj) {
+						_this.isAnimate = false;
+						if(_this.stepActive){
+							_this.once = true;
+							//如果单步执行激活，不触发end事件
+							return false;
+						};
+						(_this.current < _this.total - 1) ? (function(){
+							_this.current += 1;
+							if(_this.data.status !== 'pause')
+							_this.play();
+						})() : (function(){
+							_this.current = 0;
+							if( _this.data.status !== 'pause' && _this.infinite){
+								_this.replay();
+							}else{
+								_this.once = true; //一次循环结束
+							};
+						})();
+					}
+				}
+			})();
+		},
+		_initData : function () {
+			this.current = 0;
+			this.once = false;
+			this.finalStyle = null;
+			this.stepActive = false; //关闭单步执行
+			this.data.status = '';
 		},
 		_initStyle : function (obj, start) {
 			var _this = this, val = obj.style, startData, endData, hasProperty;
@@ -286,7 +328,7 @@
 				obj.pauseStyle = obj.startStyle;
 			};
 			this.finalStyle = obj.endStyle;
-			obj.active = true;
+			
 			//执行回调函数，开始
 			_this.data.status = 'start';
 			obj.callback(_this.data);
@@ -315,13 +357,16 @@
 				obj.remainderTime = (obj.remainderTime > 0) ? obj.remainderTime - 50 : 0 ; //剩余时间递减
 				
 				if (_this.control.isProcess) {
-					_this.control.process(); //进程执行中...
+					_this.control.process(obj); //进程执行中...
 				};
 				if(obj.remainderTime <= 0){
 					//动画结束
 					clearInterval(_this.timer);
-					_this.data.status === 'end';
-					_this.control.end();
+					
+					_this.data.status = 'end';
+					obj.callback(_this.data,function(){
+						_this.control.end(obj); //结束的回调函数
+					});
 				}
 			},50);
 		},
@@ -345,57 +390,49 @@
 		},
 		_run : function(obj, speed, easing){
 			//用tween实现动画效果，并设置css样式
-			var _this = this, t = 0, d = parseInt(speed/10), tween = (Tween[easing]) ? Tween[easing] : Tween['linear'];
+			var _this = this, t = 0, d = parseInt(speed/10), styles = _this.elem.style, start = obj.pauseStyle, end = obj.endStyle, tween = (Tween[easing]) ? Tween[easing] : Tween['linear'];
 			function Run(){
 				if(t < d){
 					t++;
 					_this.isAnimate = true; //动画执行
-					for (var j in obj.pauseStyle){
-						if(typeof obj.endStyle[j] === 'number'){
+					for (var j in start){
+						if(typeof end[j] === 'number'){
 							if(j === 'opacity'){
-								_this.elem.style.filter = 'alpha(opacity='+Math.ceil(tween(t,obj.pauseStyle[j],obj.endStyle[j]-obj.pauseStyle[j],d))+')';
+								styles['filter'] = 'alpha(opacity='+Math.ceil(tween(t,start[j],end[j]-start[j],d))+')';
 							}else{
-								_this.elem.style[j] = Math.ceil(tween(t,obj.pauseStyle[j],obj.endStyle[j]-obj.pauseStyle[j],d)) + 'px';
+								styles[j] = Math.ceil(tween(t,start[j],end[j]-start[j],d)) + 'px';
 							}
 						};
 					};
 					_this.timer = setTimeout(Run, 10);
 					
 					if (_this.control.isProcess) {
-						_this.control.process(); //进程执行中...
+						_this.control.process(obj); //进程执行中...
 					};
 					
 				}else{
 					//设置最终效果
-					for (var k in obj.endStyle){
-						if(typeof obj.endStyle[j] === 'number'){
+					for (var k in end){
+						if(typeof end[j] === 'number'){
 							if(j === 'opacity'){
-								_this.elem.style.filter = 'alpha(opacity='+obj.endStyle['opacity']+')';
+								styles['filter'] = 'alpha(opacity='+end['opacity']+')';
 							}else{
-								_this.elem.style[k] = obj.endStyle[k] + 'px';
+								styles[k] = end[k] + 'px';
 							}
 						}else{
-							_this.elem.style[k] = obj.endStyle[k];
+							styles[k] = end[k];
 						}
 					};
 					clearTimeout(_this.timer); //清除计时器
-					_this.control.end();
+					
+					_this.data.status = 'end';
+					obj.callback(_this.data);
+					_this.control.end(obj); //结束的回调函数
 				};
 				obj.remainderTime = (obj.remainderTime > 0) ? obj.remainderTime - 10 : 0 ; //剩余时间递减				
 				//console.log(_this.remainderTime); //调试选项，打印剩余时间
 			};
 			Run();
-		},
-		_process : function () {
-			//动画执行过程中
-			//如果开启了实时数据，进程执行过程中，返回数据
-			var _this = this;
-			_this.data.result = {}
-			for(var attr in _this.params.style){
-				_this.data.result[attr] = _this._getStyle(_this.elem, attr); //时时数据
-			};
-			_this.data.status = 'process';
-			_this.callback(_this.data);
 		},
 		_getStyle : function (elem, attr) {
 			return (elem.currentStyle? elem.currentStyle : window.getComputedStyle(elem, null))[attr];
