@@ -379,12 +379,16 @@
 		_run : function(speed, easing){
 			//用tween实现动画效果，并设置css样式
 			var _this = this, t = 0, d = parseInt(speed/10), tween = (Tween[easing]) ? Tween[easing] : Tween['linear'];
+			
+			pauseStyle = _this.pauseStyle;
 			function Run(){
+				
 				if(t < d){
 					t++;
 					_this.isAnimate = true; //动画执行
 					for (var j in _this.pauseStyle){
 						if(typeof _this.endStyle[j] === 'number'){
+							console.log(j);
 							if(j === 'opacity'){
 								_this.elem.style.filter = 'alpha(opacity='+Math.ceil(tween(t,_this.pauseStyle[j],_this.endStyle[j]-_this.pauseStyle[j],d))+')';
 							}else{
