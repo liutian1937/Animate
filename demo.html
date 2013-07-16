@@ -99,7 +99,7 @@ b = Jwalk(a).animate({left:'+200px',backgroundColor:'#FF7F00'})
 //b.step(0,1,2,3);
 function play(){
 	//b.play();
-	b.play();
+	b.replay();
 }
 function pause(){
 	b.pause();
@@ -110,8 +110,8 @@ function reset(){
 }
 
 function hide(){
-	//b.toggle('slow');
-	b.slideDown('slow');
+	b.toggle(2000);
+	//b.slideToggle('slow');
 }
 
 </script>

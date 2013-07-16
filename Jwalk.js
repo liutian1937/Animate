@@ -55,7 +55,7 @@
 				fast : 200 ,
 				slow : 600
 			}, //默认的动画执行时间
-			easing : 'linear', //默认动作
+			easing : 'ease-in', //默认动作
 			em2px : 16 //em与px转换单位，默认1em = 16px
 		};
 		
@@ -285,56 +285,60 @@
 						_this.hide(speed) ;
 					},
 					hide : function (speed, callback) {
-						_this.init(); 
-						speed = speed || 0 ;
-						_this.animate({opacity:'0'},speed,function(data){
-							if(data.status === 'end'){
-								_this.elem.style.display = 'none';
-								if(callback && typeof callback === 'function')
+						_this._act({opacity:'0'},speed,function(){
+							_this.elem.style.display = 'none';
+							if(callback && typeof callback === 'function'){
 								callback();
-							}
-						}).play();
+							};
+						});
 					},
 					show : function (speed, callback) {
-						_this.init(); 
-						_this.elem.style.display = 'block';
-						speed = speed || 0 ;
-						_this.animate({opacity:'1'},speed,function(data){
-							if(data.status === 'end'){
-								if(callback && typeof callback === 'function')
-								callback();
-							}
-						}).play();
+						_this._css({
+							'display' : 'block',
+							'opacity' : '0',
+							'filter' : 'alpha(opacity=0)'
+						});
+						_this._act({opacity:'1'},speed,callback);
+					},
+					slideToggle : function (speed) {
+						if (_this.isAnimate) {
+							return false;
+						};
+						(_this._getStyle(_this.elem, 'height') === '0px' || _this._getStyle(_this.elem, 'display') === 'none') ?
+						_this.slideDown(speed) :
+						_this.slideUp(speed) ;
 					},
 					slideUp : function (speed, callback) {
-						_this.init();
-						speed = speed || 0 ;
-						_this.animate({height:'0px'},speed,function(data){
-							if(data.status === 'end'){
-								if(callback && typeof callback === 'function')
+						_this._act({height:'1px'},speed,function(){
+							_this.elem.style.display = 'none';
+							if(callback && typeof callback === 'function'){
 								callback();
-							}
-						}).play();
+							};
+						});
 					},
 					slideDown : function (speed, callback) {
-						_this.init();
-						speed = speed || 0 ;
-						_this.elem.style.display = 'block';
-						var offsetHeight = _this.elem.offsetHeight+'px';
-						//_this.elem.style.display = 'none';
-						_this.elem.style.overflow = 'hidden';
-						console.log(offsetHeight);
-						_this.elem.style.height = '0px';
-						//_this.elem.style.display = 'block';
-						_this.animate({height:offsetHeight},speed,function(data){
-							if(data.status === 'end'){
-								if(callback && typeof callback === 'function')
-								callback();
-							}
-						}).play();
+						this.oHeight = this.oHeight || _this._offset(_this.elem,'Height')+'px';
+						_this._css({
+							'display' : 'block',
+							'overflow' : 'hidden',
+							'height' : '0px'
+						});
+						_this._act({height:this.oHeight},speed,callback);
 					}
 				}
 			});
+		},
+		_act : function (style,speed,callback) {
+			var _this = this;
+			_this.init(); //初始化
+			speed = speed || 0 ;
+			_this.animate(style, speed, function(data){
+				if(data.status === 'end'){
+					if(callback && typeof callback === 'function'){
+						callback();
+					};
+				}
+			}).play();
 		},
 		_initData : function () {
 			this.current = 0;
@@ -438,7 +442,7 @@
 		_move : function (obj) {
 			if(Unit.css3){
 				this._transition(obj, obj.remainderTime, obj.easing);
-				this._css3(obj.endStyle); //继续动画
+				this._css(obj.endStyle); //继续动画
 			}else{
 				this._run(obj, obj.remainderTime, obj.easing);
 			};
@@ -469,11 +473,13 @@
 				}
 			},50);
 		},
-		_css3 : function(val){
+		_css : function(val){
 			//设置css3的属性值
 			for(var attr in val){
 				attr = (attr == 'transform') ? Unit.Transform : attr ;
-				this.elem.style[attr] = val[attr];
+				if(attr in this.elem.style){
+					this.elem.style[attr] = val[attr];
+				}
 			};
 		},
 		_compute : function (obj, val) {
@@ -536,6 +542,21 @@
 		},
 		_getStyle : function (elem, attr) {
 			return (elem.currentStyle? elem.currentStyle : window.getComputedStyle(elem, null))[attr];
+		},
+		_offset : function (elem, type) {
+			var _this = this, method = 'offset'+type, ret;
+			return (_this._getStyle(elem, 'height') === '0px') ? 
+			(function(){
+				if(_this._getStyle(elem, 'display') === 'none'){
+					elem.style.display = 'block';
+					ret = elem[method];
+					elem.style.display = 'none';
+				}else{
+					ret = elem[method];
+				}
+				return ret;
+			})() :
+			parseInt(_this._getStyle(_this.elem, 'height')) ;
 		},
 		_conversion : function (num) {
 			//返回带正负的数值，并换算单位为PX
