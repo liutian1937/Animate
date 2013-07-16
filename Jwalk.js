@@ -42,20 +42,47 @@
 		return self;
 	})();
 	
-	var Jwalk = function(elem){
+	var Jwalk = function(elem, params){
+		params = params || null;
 		if (!(this instanceof Jwalk)) {
-			return new Jwalk (elem);
+			return new Jwalk (elem, params);
 		};
 		this.elem = elem || {};
-		this.speeds = {
-			normal : 400 ,
-			fast : 200 ,
-			slow : 600
-		}; //默认的动画执行时间
-		this.easing = 'linear'; //默认动作
-		this._init(); //初始化
+		this.options = {
+			isProcess : false, //是否开启时时进程，消耗性能，默认关闭
+			speeds : {
+				normal : 400 ,
+				fast : 200 ,
+				slow : 600
+			}, //默认的动画执行时间
+			easing : 'linear', //默认动作
+			em2px : 16 //em与px转换单位，默认1em = 16px
+		};
+		
+		if(params && typeof params == 'object'){
+			for (var key in params) {
+				if(this.options.hasOwnProperty(key)){
+					this.options[key] = params[key] ;
+				}
+			}
+		};
+		this.init(); //初始化
+		this._closeFn();
 	};
 	Jwalk.prototype = {
+		init : function () {
+			//初始化
+			var _this = this;
+			this.isAnimate = false; //是否有动作在执行
+			this.stepArray = []; //缓存动画数组
+			this.newStepArray = null;
+			this.current = 0; //当前执行的第几个动作
+			this.total = 0; //一共几个动作
+			this.once = false; //一个循环是否结束
+			this.data = {}; //回调数据
+			this.beginStyle = {}; //动画开始的样式
+			this.finalStyle = null; //每次执行的最终结果
+		},
 		animate : function () {
 			/*
 				animate完成下列事件：
@@ -74,30 +101,24 @@
 			};
 			
 			//设置回调
-			/*
-			params.callback = (arg[len - 1] && typeof arg[len - 1] === 'function') ?
-			arg[len - 1] :
-			function () {};
-			*/
-			
 			params.callback = (function(){
 				return function (data, fn) {
 					if(arg[len - 1] && typeof arg[len - 1] === 'function') {
 						arg[len - 1](data);
 					};
-					if(fn){
+					if(fn && typeof fn === 'function'){
 						fn();
 					};
 				}
 			})();
 			
 			//设置速度
-			params.speed = (arg[1] && typeof arg[1] === 'number') ? 
+			params.speed = (typeof arg[1] === 'number') ? 
 			arg[1] :
 			(function () {
-				return (typeof arg[1] === 'string' && arg[1] in _this.speeds) ? 
-				_this.speeds[arg[1]] :
-				_this.speeds['normal'] ;
+				return (typeof arg[1] === 'string' && arg[1] in _this.options.speeds) ? 
+				_this.options.speeds[arg[1]] :
+				_this.options.speeds['normal'] ;
 			})();
 			
 			//设置动画效果
@@ -106,12 +127,12 @@
 				return (arg[2] && typeof arg[2] === 'string') ? 
 				arg[2] :
 				(function () {
-					return (typeof arg[1] === 'string' && !(arg[1] in _this.speeds)) ?
+					return (typeof arg[1] === 'string' && !(arg[1] in _this.options.speeds)) ?
 					arg[1] :
-					_this.easing ;
+					_this.options.easing ;
 				})();
 			})() :
-			_this.easing ;
+			_this.options.easing ;
 			params.startStyle = {};
 			params.endStyle = {};
 			params.pauseStyle = {};
@@ -214,26 +235,11 @@
 			this.play();
 			//return this; //链式调用
 		},
-		_init : function () {
-			//初始化
+		_closeFn : function () {
 			var _this = this;
-			this.isAnimate = false; //是否有动作在执行
-			this.stepArray = []; //缓存动画数组
-			this.current = 0; //当前执行的第几个动作
-			this.total = 0; //一共几个动作
-			this.once = false; //一个循环是否结束
-			this.data = {}; //回调数据
-			this.finalStyle = null; //每次执行的最终结果
-			
-			this.beginStyle = {}; //动画开始的样式
-			for (var attr in this.elem.style){
-				this.beginStyle[attr] = _this._getStyle(_this.elem, attr);
-			};
-			
 			_this.control = (function(){
 				//用闭包保存动作
 				return {
-					isProcess : true, //是否开启时时进程
 					process : function (obj){
 						//动画执行过程中
 						//如果开启了实时数据，进程执行过程中，返回数据
@@ -267,6 +273,68 @@
 					}
 				}
 			})();
+			
+			_this.extend(function(){
+				return {
+					toggle : function (speed) {
+						if (_this.isAnimate) {
+							return false;
+						};
+						(_this._getStyle(_this.elem, 'display') === 'none') ?
+						_this.show(speed) :
+						_this.hide(speed) ;
+					},
+					hide : function (speed, callback) {
+						_this.init(); 
+						speed = speed || 0 ;
+						_this.animate({opacity:'0'},speed,function(data){
+							if(data.status === 'end'){
+								_this.elem.style.display = 'none';
+								if(callback && typeof callback === 'function')
+								callback();
+							}
+						}).play();
+					},
+					show : function (speed, callback) {
+						_this.init(); 
+						_this.elem.style.display = 'block';
+						speed = speed || 0 ;
+						_this.animate({opacity:'1'},speed,function(data){
+							if(data.status === 'end'){
+								if(callback && typeof callback === 'function')
+								callback();
+							}
+						}).play();
+					},
+					slideUp : function (speed, callback) {
+						_this.init();
+						speed = speed || 0 ;
+						_this.animate({height:'0px'},speed,function(data){
+							if(data.status === 'end'){
+								if(callback && typeof callback === 'function')
+								callback();
+							}
+						}).play();
+					},
+					slideDown : function (speed, callback) {
+						_this.init();
+						speed = speed || 0 ;
+						_this.elem.style.display = 'block';
+						var offsetHeight = _this.elem.offsetHeight+'px';
+						//_this.elem.style.display = 'none';
+						_this.elem.style.overflow = 'hidden';
+						console.log(offsetHeight);
+						_this.elem.style.height = '0px';
+						//_this.elem.style.display = 'block';
+						_this.animate({height:offsetHeight},speed,function(data){
+							if(data.status === 'end'){
+								if(callback && typeof callback === 'function')
+								callback();
+							}
+						}).play();
+					}
+				}
+			});
 		},
 		_initData : function () {
 			this.current = 0;
@@ -276,7 +344,7 @@
 			this.data.status = '';
 		},
 		_initStyle : function (obj, start) {
-			var _this = this, val = obj.style, startData, endData, hasProperty;
+			var _this = this, val = obj.style, startData, endData, hasProperty, tempData;
 			if(Unit.css3){
 				for(var attr in val){
 					if (start && start[attr]){
@@ -290,35 +358,66 @@
 						return _this._conversion(startData) + _this._conversion(val[attr]) + 'px';
 					})() :
 					val[attr] ;
+					
+					if(!_this.beginStyle[attr]){
+						//初始的样式
+						if(attr == 'transform'){
+							var s;
+							attr = Unit.Transform;
+							s = _this._getStyle(_this.elem, attr);
+							_this.beginStyle['transform'] = s;
+							_this.beginStyle[attr] = s;
+						}else{
+							_this.beginStyle[attr] = _this._getStyle(_this.elem, attr);
+						}						
+					};
 					obj.startStyle[attr] = startData;
 					obj.endStyle[attr] = endData;
 				};
 			}else{
 				for(var attr in val){
-						if(attr === 'opacity'){
+					if(attr === 'opacity'){
+						if (start && start[attr]){
+							//如果传入了开始的样式
+							startData = start[attr];
+						}else{
+							startData = parseInt((_this._getStyle(_this.elem, 'filter')).replace(/[^0-9]/ig,""));
+							startData = (startData || startData === 0) ? startData : 100;
+						}
+						processData = val[attr]*100;
+						hasProperty = true;
+					}else{
+						tempData = _this._getStyle(_this.elem, attr);
+						if(tempData){
+							hasProperty = true;
 							if (start && start[attr]){
 								//如果传入了开始的样式
 								startData = start[attr];
 							}else{
-								startData = parseInt((_this._getStyle(_this.elem, 'filter')).replace(/[^0-9]/ig,"")) || 100;
+								tempData = (tempData == 'auto') ? 
+								(function(){
+									if(attr === 'width'){
+										return _this.elem.offsetWidth;
+									}else if(attr === 'height'){
+										return _this.elem.offsetHeight;
+									}else{
+										return '0px';
+									}
+								})()
+								: tempData;
+								startData = _this._conversion(tempData);
 							}
-							processData = val[attr]*100;
-							hasProperty = true;
+							processData = (Math.abs(parseInt(val[attr].replace(/=|px|em/g,''))) >= 0) ? _this._conversion(val[attr]) : val[attr];
 						}else{
-							if(_this._getStyle(_this.elem, attr)){
-								hasProperty = true;
-								if (start && start[attr]){
-									//如果传入了开始的样式
-									startData = start[attr];
-								}else{
-									startData = _this._conversion(_this._getStyle(_this.elem, attr));
-								}
-								processData = (Math.abs(parseInt(val[attr].replace(/=|px|em/g,''))) >= 0) ? _this._conversion(val[attr]) : val[attr];
-							}else{
-								hasProperty = false;
-							}
-						};
-
+							hasProperty = false;
+						}
+					};
+					
+					if(!_this.beginStyle[attr]){
+						//初始的样式
+						_this.beginStyle[attr] = _this._getStyle(_this.elem, attr);
+					};
+					
 					if ( hasProperty ) {
 						endData = (val[attr].match(/^[\-|\+]=?/)) ? startData + processData : processData;
 						obj.startStyle[attr] = startData;
@@ -350,13 +449,13 @@
 			var _this = this;
 			_this.elem.style[Unit.Property] = 'all' ;
 			_this.elem.style[Unit.Duration] = speed + 'ms';
-			_this.elem.style[Unit.TimingFunction] = easing || 'linear';
+			_this.elem.style[Unit.TimingFunction] = easing || _this.options.easing;
 			
 			_this.timer = setInterval(function(){
 				_this.isAnimate = true;
 				obj.remainderTime = (obj.remainderTime > 0) ? obj.remainderTime - 50 : 0 ; //剩余时间递减
 				
-				if (_this.control.isProcess) {
+				if (_this.options.isProcess) {
 					_this.control.process(obj); //进程执行中...
 				};
 				if(obj.remainderTime <= 0){
@@ -373,6 +472,7 @@
 		_css3 : function(val){
 			//设置css3的属性值
 			for(var attr in val){
+				attr = (attr == 'transform') ? Unit.Transform : attr ;
 				this.elem.style[attr] = val[attr];
 			};
 		},
@@ -390,7 +490,7 @@
 		},
 		_run : function(obj, speed, easing){
 			//用tween实现动画效果，并设置css样式
-			var _this = this, t = 0, d = parseInt(speed/10), styles = _this.elem.style, start = obj.pauseStyle, end = obj.endStyle, tween = (Tween[easing]) ? Tween[easing] : Tween['linear'];
+			var _this = this, t = 0, d = parseInt(speed/10), styles = _this.elem.style, start = obj.pauseStyle, end = obj.endStyle, tween = (Tween[easing]) ? Tween[easing] : Tween[_this.options.easing];
 			function Run(){
 				if(t < d){
 					t++;
@@ -406,7 +506,7 @@
 					};
 					_this.timer = setTimeout(Run, 10);
 					
-					if (_this.control.isProcess) {
+					if (_this.options.isProcess) {
 						_this.control.process(obj); //进程执行中...
 					};
 					
@@ -445,10 +545,20 @@
 				var width = parseInt(_this.elem.parentNode.scrollWidth);
 				return parseInt(num)*width/100;
 			};
-			return num.match(/em/) ? parseInt(num,10)*16 : parseInt(num,10) ;
+			return num.match(/em/) ? parseInt(num,10) * _this.options.em2px : parseInt(num,10) ;
+		},
+		extend : function (fn) {
+			var obj;
+			if(fn && typeof fn === 'function'){
+				obj = fn(this);
+				for(var attr in obj){
+					if(!this.hasOwnProperty(attr)){
+						Jwalk.prototype[attr] = obj[attr];
+					}
+				};
+			}
 		}
 	};
-
 	//动画算法
 	var Tween = {
 		'linear': function(t,b,c,d){ return c*t/d + b; },

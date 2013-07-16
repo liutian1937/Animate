@@ -6,13 +6,14 @@
 <body>
 	
 <style>
-#a{width:20px;height:20px;background:#db4f33;box-shadow:0px 0px 10px rgba(0,0,0,0.3);border-radius:50px;position:absolute;left:200px;top:100px;}
+#a{width:50px;height:100px;background:#db4f33;box-shadow:0px 0px 10px rgba(0,0,0,0.3);border-radius:50px;position:absolute;left:200px;top:100px;color:#fff;display:none;}
 </style>
 
 <input type="button" value="play" onclick="play()" />
 <input type="button" value="pause" onclick="pause()" />
 <input type="button" value="reset" onclick="reset()" />
-<div id="a" style=""></div>
+<input type="button" value="hide" onclick="hide()" />
+<div id="a" style="">22</div>
 
 <div id="result" style="width:100px;height:300px;background:#f5f5f5;border:5px solid #ddd;position:absolute;left:20px;top:100px;font-size:12px;color:#333;line-height:20px;overflow:auto;"></div>
 
@@ -21,29 +22,26 @@
 <script>
 var a = document.getElementById('a'), b, result = document.getElementById('result');
 
-b = Jwalk(a).animate({left:'+100px',top:'100px',backgroundColor:'#333'},2000,'linear',function(data){
+b = Jwalk(a);
+
+/*
+b.animate({left:'+100px',top:'100px',backgroundColor:'#333',transform:'rotate(50deg)'},500,'linear',function(data){
 		switch (data.status){
 			case 'start' :
-				console.log('开始1');
 				result.innerHTML += '动作1开始<br/>';
 				break;
 			case 'process' :
-				//console.log('动作1进行中');
-				//console.log(data.result);
 				break;
 			case 'pause' :
-				console.log('暂停');
 				result.innerHTML += '动作1暂停喽<br/>';
 				break;
 			case 'end' : 
-				console.log('结束');
 				result.innerHTML += '动作1结束<br/>';
 				break;
 		}
 	}).animate({top:'+50px',left:'200px',backgroundColor:'#db4f33'},500,function(data){
 		switch (data.status){
 			case 'start' :
-				console.log('开始2');
 				result.innerHTML += '动作2开始<br/>'
 				break;
 			case 'process' :
@@ -56,10 +54,9 @@ b = Jwalk(a).animate({left:'+100px',top:'100px',backgroundColor:'#333'},2000,'li
 				result.innerHTML += '动作2结束<br/>';
 				break;
 		}
-	}).animate({top:'-10%',left:'300px',backgroundColor:'#0f0'},500,function(data){
+	}).animate({top:'-10px',left:'300px',backgroundColor:'#0f0'},500,function(data){
 		switch (data.status){
 			case 'start' : 
-				console.log('开始3');
 				result.innerHTML += '动作3开始<br/>'
 				break;
 			case 'process' :
@@ -72,10 +69,9 @@ b = Jwalk(a).animate({left:'+100px',top:'100px',backgroundColor:'#333'},2000,'li
 				result.innerHTML += '动作3结束<br/>';
 				break;
 		}
-	}).animate({top:'-10px',left:'-30px',backgroundColor:'#ccc'},500,function(data){
+	}).animate({top:'40px',left:'-30px',backgroundColor:'#ccc'},500,function(data){
 		switch (data.status){
 			case 'start' : 
-				console.log('开始4');
 				result.innerHTML += '动作4开始<br/>'
 				break;
 			case 'process' :
@@ -90,7 +86,7 @@ b = Jwalk(a).animate({left:'+100px',top:'100px',backgroundColor:'#333'},2000,'li
 				break;
 		}
 	});
-
+*/
 /*
 b = Jwalk(a).animate({left:'+200px',backgroundColor:'#FF7F00'})
 	.animate({left:'-150px',top:'+150px',backgroundColor:'#DB7093'})
@@ -99,7 +95,8 @@ b = Jwalk(a).animate({left:'+200px',backgroundColor:'#FF7F00'})
 	.animate({left:'-150px',top:'-150px',backgroundColor:'#DB4F33'});
 */
 
-b.step(0,1,2,3);
+
+//b.step(0,1,2,3);
 function play(){
 	//b.play();
 	b.play();
@@ -110,6 +107,11 @@ function pause(){
 
 function reset(){
 	b.reset();
+}
+
+function hide(){
+	//b.toggle('slow');
+	b.slideDown('slow');
 }
 
 </script>
