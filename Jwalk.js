@@ -1,12 +1,12 @@
-﻿(function(){
+﻿(function () {
 	var Unit = (function () {
 		var style = document.documentElement.style, self = {};
 		//each函数，封装for循环
 		function _each (arr, fn) {
 			var i = 0, len = arr.length;
-			for (; i < len; i += 1){
+			for (;i < len; i += 1 ) {
 				fn(arr[i]);
-			}
+			};
 		};
 		//获取css3前缀
 		var _prefix = (function () {
@@ -240,7 +240,7 @@
 					process : function (obj){
 						//动画执行过程中
 						//如果开启了实时数据，进程执行过程中，返回数据
-						_this.data.result = {}
+						_this.data.result = {};
 						for(var attr in obj.style){
 							_this.data.result[attr] = _this._getStyle(_this.elem, attr); //时时数据
 						};
