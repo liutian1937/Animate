@@ -6,14 +6,16 @@
 <body>
 	
 <style>
-#a{width:50px;height:100px;background:#db4f33;box-shadow:0px 0px 10px rgba(0,0,0,0.3);border-radius:50px;position:absolute;left:200px;top:100px;color:#fff;display:none;}
+#a{width:30px;height:30px;background:#db4f33;box-shadow:0px 0px 10px rgba(0,0,0,0.3);border-radius:50px;position:absolute;left:200px;top:100px;color:#fff;}
 </style>
 
 <input type="button" value="play" onclick="play()" />
+<input type="button" value="cycle" onclick="cycle()" />
 <input type="button" value="pause" onclick="pause()" />
-<input type="button" value="reset" onclick="reset()" />
+<input type="button" value="reset" onclick="reset()" /><br/>
+<input type="button" value="show" onclick="show()" />
 <input type="button" value="hide" onclick="hide()" />
-<div id="a" style="">22</div>
+<div id="a" style=""></div>
 
 <div id="result" style="width:100px;height:300px;background:#f5f5f5;border:5px solid #ddd;position:absolute;left:20px;top:100px;font-size:12px;color:#333;line-height:20px;overflow:auto;"></div>
 
@@ -22,7 +24,7 @@
 <script>
 var a = document.getElementById('a'), b, result = document.getElementById('result');
 
-b = Jwalk(a);
+b = Jwalk(a); //实例化
 
 /*
 b.animate({left:'+100px',top:'100px',backgroundColor:'#333',transform:'rotate(50deg)'},500,'linear',function(data){
@@ -87,19 +89,22 @@ b.animate({left:'+100px',top:'100px',backgroundColor:'#333',transform:'rotate(50
 		}
 	});
 */
-/*
+
 b = Jwalk(a).animate({left:'+200px',backgroundColor:'#FF7F00'})
 	.animate({left:'-150px',top:'+150px',backgroundColor:'#DB7093'})
 	.animate({top:'-200px',left:'+50px',backgroundColor:'#A4D3EE'})
 	.animate({left:'+50px',top:'+200px',backgroundColor:'#2E8B57'})
 	.animate({left:'-150px',top:'-150px',backgroundColor:'#DB4F33'});
-*/
+
 
 
 //b.step(0,1,2,3);
+function cycle(){
+	b.cycle();//循环播放
+}
+
 function play(){
-	//b.play();
-	b.replay();
+	b.play();
 }
 function pause(){
 	b.pause();
@@ -109,9 +114,11 @@ function reset(){
 	b.reset();
 }
 
+function show(){
+	b.show();
+}
 function hide(){
-	b.toggle(2000);
-	//b.slideToggle('slow');
+	b.hide();
 }
 
 </script>
