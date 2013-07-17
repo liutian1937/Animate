@@ -2,344 +2,159 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>html</title>
-<body>
-	
+<title>Jwalk - JavaScript Animation Library</title>
+<link href='http://fonts.googleapis.com/css?family=Arimo:400,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.2.0/pure-min.css">
 <style>
-#a{width:40px;height:40px;background:#db4f33;box-shadow:0px 0px 10px rgba(0,0,0,0.3);border-radius:50px;position:absolute;left:220px;top:1em;}
+h1,h2,h3,h4{font-weight:100;}
+.sansfont{font-family: 'Arimo', sans-serif;}
+.heifont{font-family:"Microsoft YaHei",sans-serif;}
+#layout{padding-left:200px;}
+/*menu start*/
+#menu{margin-left:-200px;width:200px;position:fixed;top:0;left:200px;bottom:0;z-index:1000;background:#191818;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scroll:touch;}
+#menu a{color:#999;border:none;white-space:normal;font-weight:400;padding:0.6em 0 0.6em 1em;letter-spacing:2px;}
+#menu .pure-menu-open{background:transparent;border:0;}
+#menu .pure-menu ul{border:none;background:transparent;}
+#menu .pure-menu ul,#menu .pure-menu .menu-item-selected{border-top:1px solid #333;}
+#menu .pure-menu li a:hover,#menu .pure-menu li a:focus{background:#333;}
+.pure-menu-link{display:none;top:0;left:150px;background:#000;background:rgba(0,0,0,0.7);padding:0.75em 1em;}
+.pure-menu-link:hover,.pure-menu-link:focus{background:#000;}
+#menu .pure-menu-heading{font-size:130%;color:#fff;font-weight:700;letter-spacing:4px;}
+#menu .pure-menu-heading:hover,#menu .pure-menu-heading:focus{color:#999;}
+#menu .pure-menu-selected{background:#1f8dd6;}
+#menu .pure-menu-selected a{color:#fff;}
+#menu li.pure-menu-selected a:hover,#menu li.pure-menu-selected a:focus{background:none;}
+/*main start*/
+#main{width:100%;}
+#main .hgroup{text-align:center;padding:2em 0;}
+#main .hgroup h1{color:#1f8dd6;font-size:600%;margin:0;padding:0;}
+#main .hgroup h2{color:#666;font-size:200%;}
+#main .hgroup p a{line-height:1.6em;margin:0 0.2em;}
+
+.padding-box{padding:1.6em;}
+
+#main .content{color:#333;}
+#main .content .pure-g-r{border-top:1px solid #ddd;}
+#main .content h3,#main .content h4{font-size:1.2em;margin-top:0;}
+#main .content p,#main .content ul{font-size:1em;line-height:1.8em;color:#666;}
+#main .content ul{padding-left:24px;}
+
+#main .bottom{background:#f5f5f5;color:#666;font-size:0.8em;}
 </style>
-<div id="a" style=""></div>
-	
-<script>
-
-	
-(function(){
-	var Unit = (function () {
-		var style = document.documentElement.style, self = {};
-		//each函数，封装for循环
-		function _each (arr, fn) {
-			var i = 0, len = arr.length;
-			for (; i < len; i += 1){
-				fn(arr[i]);
-			}
-		};
-		//获取css3前缀
-		var _prefix = (function () {
-			var head = ['t', 'webkitT', 'MozT', 'msT', 'OT'], transform, ret;
-			_each(head, function (val) {
-				transform = val + 'ransform';
-				if (transform in style) {
-					ret = val.substr(0,val.length - 1);
-				}
-			});
-			return ret;
-		})();
-		//扩展函数，克隆对象属性
-		self.extend = function (target, obj) {
-			for (var i in obj) {
-				target[i] = obj[i];
-			}
-		};
-		//拼接css3属性，并返回
-		function _prefixStyle (style) {
-			if ( _prefix === false ) return false;
-			if ( _prefix === '' ) return style;
-			return _prefix + style.charAt(0).toUpperCase() + style.substr(1);
-		};
-		
-		self.extend(self, {
-			css3 : _prefixStyle('transition'),
-			Transform : _prefixStyle('transform'),
-			Property : _prefixStyle('transitionProperty'),
-			Duration : _prefixStyle('transitionDuration'),
-			TimingFunction : _prefixStyle('transitionTimingFunction')
-		});
-		return self;
-	})();
-	
-	var Animate = function (obj) {
-		if (!(this instanceof Animate)) {
-			return new Animate (obj);
-		};
-		this.obj = obj || {};
-		this.init();
-	};
-	Animate.prototype = {
-		init : function () {
-			//初始化数据
-			this.step = []; //按照顺序执行
-			this.current = 0; //当前执行的第几个动作
-			this.total = 0; //一共几个动作
-			this.speeds = {
-				normal : 400 ,
-				fast : 200 ,
-				slow : 600
-			}; //默认的动画执行时间
-			this.easing = 'ease'; //默认动作
-		},
-		move : function () {
-			var _this = this, params = {}, arg = arguments, len = arg.length;
-			if(typeof arg[0] === 'object'){
-				//检查move中传入的参数
-				params.style = arg[0];
-			}else{
-				console.log('参数不正确');
-				return false;
-			};
+<body>
+	<div class="pure-g-r" id="layout">
+		<!--menu start-->
+		<div class="pure-u sansfont" id="menu">
 			
-			//设置回调
-			params.callback = (arg[len - 1] && typeof arg[len - 1] === 'function') ?
-			arg[len - 1] :
-			function () {};
+			<div class="pure-menu pure-menu-open">
+				<a href="#" class="pure-menu-heading">Jwalk</a>
+				<ul>
+					<li class="pure-menu-selected"><a href="">Jwalk(element)</a></li>
+					<li><a href="">.animate()</a></li>
+					<li><a href="">.play()</a></li>
+					<li><a href="">.pause()</a></li>
+					<li><a href="">.step()</a></li>
+					<li><a href="">.replay()</a></li>
+					<li><a href="">.reset()</a></li>
+					<li><a href="">.cycle()</a></li>
+					<li><a href="">.extend()</a></li>
+					<li class="pure-menu-selected"><a href="javascript:;">Animation</a></li>
+					<li><a href="">.toggle()</a></li>
+					<li><a href="">.hide/show()</a></li>
+					<li><a href="">.slideToggle()</a></li>
+					<li><a href="">.slideUp/Down()</a></li>
+				</ul>
+			</div>
 			
-			//设置速度
-			params.speed = (arg[1] && typeof arg[1] === 'number') ? 
-			arg[1] :
-			(function () {
-				return (typeof arg[1] === 'string' && arg[1] in _this.speeds) ? 
-				_this.speeds[arg[1]] :
-				_this.speeds['normal'] ;
-			})();
+		</div>
+		<!--menu end-->
+		<!--main start-->
+		<div class="pure-u" id="main">
 			
-			//设置动画效果
-			params.easing = (len > 1) ? 
-			(function () {
-				return (arg[2] && typeof arg[2] === 'string') ? 
-				arg[2] :
-				(function () {
-					return (typeof arg[1] === 'string' && !(arg[1] in _this.speeds)) ?
-					arg[1] :
-					_this.easing ;
-				})();
-			})() :
-			_this.easing ;
+			<div class="pure-g-r">
+				<div class="pure-u-1 sansfont hgroup">
+					<h1>Jwalk</h1>
+					<h2>Jwalk - JavaScript Animation Library . Smaller , Faster , Stronger</h2>
+					<p>
+						<a class="pure-button pure-button-primary" href="#">Get Start</a>
+						<a class="pure-button" href="#">View Source On Github</a>
+					</p>
+				</div>
+			</div>
 			
-			_this._act(params);
-		},
-		_act : function (params) {
-			//响应动画的事件，css3或者js实现的中继
-			var _this = this;
-			if(Unit.css3){
-				//支持css3,设置transition
-				_this._transition(params.speed,params.easing);
-				_this._css3(_this.obj,params.style);
-			}else{
-				_this.startStyle = _this.endStyle = {};
-				_this._compute();
-			}
-		},
-		_transition : function (speed,easing){
-			var _this = this;
-			_this.obj.style[Unit.Property] = 'all' ;
-			_this.obj.style[Unit.Duration] = speed + 'ms';
-			_this.obj.style[Unit.TimingFunction] = easing || 'ease';
-		},
-		_css3 : function(obj, val){
-			var _this = this, currentNum;
-			for(var attr in val){
-				obj.style[attr] = (val[attr].match(/^[\-|\+]=?/)) ? 
-				(function () {
-					currentNum = (obj.currentStyle? obj.currentStyle : window.getComputedStyle(obj, null))[attr];
-					return _this._conversion(currentNum) + _this._conversion(val[attr]) + 'px';
-				})() :
-				val[attr] ;
-			}
-		},
-		_compute : function () {
-			var _this = this, startData, endData, processData;
-			for(var attr in val){
-				startData = _this._conversion((obj.currentStyle? obj.currentStyle : window.getComputedStyle(obj, null))[attr]);
-				processData = _this._conversion(val[attr]);
-				endData = (val[attr].match(/^[\-|\+]=?/)) ? startData + endData : endData;
-				_this.startStyle[attr] = startData;
-				_this.endStyle[attr] = endData;
-			};
-			
-			function _run(){
-				if(t<d){
-					t++;
-					oM.left = Math.ceil(fun(t,0,c,d)) + "px";
-					oL.left = Math.ceil(Tween.Linear(t,0,iChart,d)) + "px";
-					Move._t = setTimeout(_run, 10);
-				}else{
-					oM.left = c + "px";
-					oL.left = iChart + "px";
-				}
-			}
-			_run();
-		},
-		_css : function(obj,val){
-			for(var attr in val){
-				obj.style[attr] = val[attr];
-			}
-		},
-		_conversion : function (num) {
-			//返回带正负的数值，并换算单位为PX
-			num = num.replace(/=/g,'')
-			return num.match(/em/) ? 
-			parseInt(num,10)*16 :
-			parseInt(num,10) ;
-		}
-	};
-	
-	//动画算法
-	var Tween = {
-		linear: function(t,b,c,d){ return c*t/d + b; },
-		Quad: {
-			easeIn: function(t,b,c,d){
-				return c*(t/=d)*t + b;
-			},
-			easeOut: function(t,b,c,d){
-				return -c *(t/=d)*(t-2) + b;
-			},
-			easeInOut: function(t,b,c,d){
-				if ((t/=d/2) < 1) return c/2*t*t + b;
-				return -c/2 * ((--t)*(t-2) - 1) + b;
-			}
-		},
-		Cubic: {
-			easeIn: function(t,b,c,d){
-				return c*(t/=d)*t*t + b;
-			},
-			easeOut: function(t,b,c,d){
-				return c*((t=t/d-1)*t*t + 1) + b;
-			},
-			easeInOut: function(t,b,c,d){
-				if ((t/=d/2) < 1) return c/2*t*t*t + b;
-				return c/2*((t-=2)*t*t + 2) + b;
-			}
-		},
-		Quart: {
-			easeIn: function(t,b,c,d){
-				return c*(t/=d)*t*t*t + b;
-			},
-			easeOut: function(t,b,c,d){
-				return -c * ((t=t/d-1)*t*t*t - 1) + b;
-			},
-			easeInOut: function(t,b,c,d){
-				if ((t/=d/2) < 1) return c/2*t*t*t*t + b;
-				return -c/2 * ((t-=2)*t*t*t - 2) + b;
-			}
-		},
-		Quint: {
-			easeIn: function(t,b,c,d){
-				return c*(t/=d)*t*t*t*t + b;
-			},
-			easeOut: function(t,b,c,d){
-				return c*((t=t/d-1)*t*t*t*t + 1) + b;
-			},
-			easeInOut: function(t,b,c,d){
-				if ((t/=d/2) < 1) return c/2*t*t*t*t*t + b;
-				return c/2*((t-=2)*t*t*t*t + 2) + b;
-			}
-		},
-		Sine: {
-			easeIn: function(t,b,c,d){
-				return -c * Math.cos(t/d * (Math.PI/2)) + c + b;
-			},
-			easeOut: function(t,b,c,d){
-				return c * Math.sin(t/d * (Math.PI/2)) + b;
-			},
-			easeInOut: function(t,b,c,d){
-				return -c/2 * (Math.cos(Math.PI*t/d) - 1) + b;
-			}
-		},
-		Expo: {
-			easeIn: function(t,b,c,d){
-				return (t==0) ? b : c * Math.pow(2, 10 * (t/d - 1)) + b;
-			},
-			easeOut: function(t,b,c,d){
-				return (t==d) ? b+c : c * (-Math.pow(2, -10 * t/d) + 1) + b;
-			},
-			easeInOut: function(t,b,c,d){
-				if (t==0) return b;
-				if (t==d) return b+c;
-				if ((t/=d/2) < 1) return c/2 * Math.pow(2, 10 * (t - 1)) + b;
-				return c/2 * (-Math.pow(2, -10 * --t) + 2) + b;
-			}
-		},
-		Circ: {
-			easeIn: function(t,b,c,d){
-				return -c * (Math.sqrt(1 - (t/=d)*t) - 1) + b;
-			},
-			easeOut: function(t,b,c,d){
-				return c * Math.sqrt(1 - (t=t/d-1)*t) + b;
-			},
-			easeInOut: function(t,b,c,d){
-				if ((t/=d/2) < 1) return -c/2 * (Math.sqrt(1 - t*t) - 1) + b;
-				return c/2 * (Math.sqrt(1 - (t-=2)*t) + 1) + b;
-			}
-		},
-		Elastic: {
-			easeIn: function(t,b,c,d,a,p){
-				if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3;
-				if (!a || a < Math.abs(c)) { a=c; var s=p/4; }
-				else var s = p/(2*Math.PI) * Math.asin (c/a);
-				return -(a*Math.pow(2,10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )) + b;
-			},
-			easeOut: function(t,b,c,d,a,p){
-				if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3;
-				if (!a || a < Math.abs(c)) { a=c; var s=p/4; }
-				else var s = p/(2*Math.PI) * Math.asin (c/a);
-				return (a*Math.pow(2,-10*t) * Math.sin( (t*d-s)*(2*Math.PI)/p ) + c + b);
-			},
-			easeInOut: function(t,b,c,d,a,p){
-				if (t==0) return b;  if ((t/=d/2)==2) return b+c;  if (!p) p=d*(.3*1.5);
-				if (!a || a < Math.abs(c)) { a=c; var s=p/4; }
-				else var s = p/(2*Math.PI) * Math.asin (c/a);
-				if (t < 1) return -.5*(a*Math.pow(2,10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )) + b;
-				return a*Math.pow(2,-10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )*.5 + c + b;
-			}
-		},
-		Back: {
-			easeIn: function(t,b,c,d,s){
-				if (s == undefined) s = 1.70158;
-				return c*(t/=d)*t*((s+1)*t - s) + b;
-			},
-			easeOut: function(t,b,c,d,s){
-				if (s == undefined) s = 1.70158;
-				return c*((t=t/d-1)*t*((s+1)*t + s) + 1) + b;
-			},
-			easeInOut: function(t,b,c,d,s){
-				if (s == undefined) s = 1.70158; 
-				if ((t/=d/2) < 1) return c/2*(t*t*(((s*=(1.525))+1)*t - s)) + b;
-				return c/2*((t-=2)*t*(((s*=(1.525))+1)*t + s) + 2) + b;
-			}
-		},
-		Bounce: {
-			easeIn: function(t,b,c,d){
-				return c - Tween.Bounce.easeOut(d-t, 0, c, d) + b;
-			},
-			easeOut: function(t,b,c,d){
-				if ((t/=d) < (1/2.75)) {
-					return c*(7.5625*t*t) + b;
-				} else if (t < (2/2.75)) {
-					return c*(7.5625*(t-=(1.5/2.75))*t + .75) + b;
-				} else if (t < (2.5/2.75)) {
-					return c*(7.5625*(t-=(2.25/2.75))*t + .9375) + b;
-				} else {
-					return c*(7.5625*(t-=(2.625/2.75))*t + .984375) + b;
-				}
-			},
-			easeInOut: function(t,b,c,d){
-				if (t < d/2) return Tween.Bounce.easeIn(t*2, 0, c, d) * .5 + b;
-				else return Tween.Bounce.easeOut(t*2-d, 0, c, d) * .5 + c*.5 + b;
-			}
-		}
-	};
-
-	window.Animate = Animate;
-})();
-
-
-var a = document.getElementById('a');
-
-window.onclick = function(){
-Animate(a).move({left:'-10px',top:'10em',height:'20px',backgroundColor:'#0f0'},'fast','linear',function(){
-	alert ('ff');
-});
-}
-</script>
-	
+			<div class="pure-g-r">
+				<div class="pure-u-1 heifont content">
+					
+					<div class="padding-box">
+						<h3>Jwalk是用来做什么的？</h3>
+						<p>前端开发过程中经常会用到一些动画效果，比如某个div的放大，缩小，左右移动，实现这些效果都是通过Js设置元素的style样式，我们可能会借助Jquery或者其他脚本库提供的动画接口来更容易的实现相关效果。但是如果我们可能只会用到Jquery的动画效果，以及一些简单的选择器，那么（在天朝）加载这个脚本库就显得多余了。为什么在天朝就多余，国内的网络环境与网速是：你懂得！所以为了适应国情，封装了这个Mini版的动画库-Jwalk(名字可轻喷)，Min压缩版+Gzip=2K</p>
+					</div>
+					
+					<div class="pure-g-r">
+						<div class="pure-u-1-3">
+							<div class="padding-box">
+								<h4>普通属性：</h4>
+								<ul>
+									<li>多浏览器兼容，IE6-10，Ghrome，Firefox，Safari，Opera</li>
+									<li>支持CSS3的浏览器采用CSS3的Transition实现动画，效果更流畅</li>
+									<li>支持定义多个连续动画，支持按照自定义的动画顺序执行</li>
+									<li>常用动画，hide/show/toggle(显隐)，slideUp/slideDown/slideToggle(上下滚)</li>
+								</ul>
+							</div>
+						</div><div class="pure-u-1-3">
+							<div class="padding-box">
+								<h4>文艺属性：</h4>
+								<ul>
+									<li>animate修改CSS样式，支持数学运算符"+","-","+=","-="</li>
+									<li>定义速度，动画执行方式Tween，以及回调，animate(样式,速度,效果,回调) </li>
+									<li>普通控制：play(开始)，pause(暂停)，replay(重新开始)，reset(还原)</li>
+									<li>高级控制：cycle(动画循环)，step(按照顺序执行/执行第N个动画)</li>
+								</ul>
+							</div>
+						</div><div class="pure-u-1-3">
+							<div class="padding-box">
+								<h4>2B属性：</h4>
+								<ul>
+									<li>支持EM->PX的转换，可以定义换算单位，默认16，即1em = 16px </li>
+									<li>增加Extend扩展函数，可以根据需求添加自定义动画</li>
+									<li>每个animate都有回调，并支持状态监测，start/pause/process/end</li>
+									<li>process进程，有开关，默认关闭，动画执行时回调当前CSS的属性值</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					
+					<div class="pure-g-r">
+						<div class="pure-u-1-2">
+							<div class="padding-box">
+								<a href="/layouts/">
+									<img src="http://purecss.io/img/layout-icon.jpg" alt="Diagram of a sample layout.">
+								</a>
+							</div>
+						</div><div class="pure-u-1-2">
+							<div class="padding-box">
+								<h4>2B属性：</h4>
+								<ul>
+									<li>支持EM->PX的转换，可以定义换算单位，默认16，即1em = 16px </li>
+									<li>增加Extend扩展函数，可以根据需求添加自定义动画</li>
+									<li>每个animate都有回调，并支持状态监测，start/pause/process/end</li>
+									<li>process进程，有开关，默认关闭，动画执行时回调当前CSS的属性值</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					
+					<div class="pure-g-r bottom">
+						<div class="pure-u-1 padding-box">
+							采用PureCss
+						</div>
+					</div>
+					
+				</div>
+				
+			</div>
+		</div>
+		<!--main end-->
+	</div>
 </body>
 </html>
