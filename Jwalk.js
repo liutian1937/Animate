@@ -67,21 +67,17 @@
 			}
 		};
 		this.init(); //初始化
-		this._closeFn();
+		this._closeFn();//闭包
 	};
 	Jwalk.prototype = {
 		init : function () {
 			//初始化
 			var _this = this;
 			this.isAnimate = false; //是否有动作在执行
-			this.stepArray = []; //缓存动画数组
-			this.newStepArray = null;
-			this.current = 0; //当前执行的第几个动作
-			this.total = 0; //一共几个动作
-			this.once = false; //一个循环是否结束
 			this.data = {}; //回调数据
 			this.beginStyle = {}; //动画开始的样式
 			this.finalStyle = null; //每次执行的最终结果
+			this.played = true;//是否play过，默认为true，方便第一次初始化
 		},
 		animate : function () {
 			/*
@@ -138,20 +134,26 @@
 			params.pauseStyle = {};
 			params.remainderTime = params.speed;
 			
+			if(_this.played){
+				//如果play过，初始化数组
+				this.stepArray = []; //缓存动画的数组
+				this.newStepArray = null;
+				_this.played = false;
+			};
 			_this.stepArray.push(params); //缓存动画数组
-
-			_this.total += 1;
+			_this.current = 0; //当前执行的第几个动作
+			_this.total = _this.stepArray.length; //一共几个动作
 			return _this; //链式操作
 		},
 		play : function (replay) {
 			var obj;
-			if(this.once || this.isAnimate){
+			if(this.isAnimate){
 				return false;
 			};
-			this.isAnimate = true;
 			if(!this.newStepArray){
 				this.newStepArray = this.stepArray.concat();
 			};
+			this.played = true;
 			obj = this.newStepArray[this.current];
 			if (!replay && this.data.status === 'pause') {
 				//如果不是replay，那么继续暂停时的动作
@@ -169,8 +171,6 @@
 			obj = this.newStepArray[this.current];
 			
 			if( obj.remainderTime > 0 ){
-				this.isAnimate = false;
-				
 				if(Unit.css3){
 					for (var attr in obj.startStyle){
 						elem.style[attr] = this._getStyle(elem, attr);
@@ -189,7 +189,6 @@
 		step : function () {
 			//返回第num个动作
 			var i = 0, len, queue;
-			this.once = false;
 			if(arguments.length > 1){
 				this.stepActive = false; //关闭单步执行
 				this.newStepArray = [];
@@ -228,8 +227,6 @@
 		},
 		cycle : function () {
 			//循环动画
-			this.current = 0;
-			this.once = false;
 			this.stepActive = false; //关闭单步执行
 			this.infinite = true; //可以循环
 			this.play();
@@ -254,7 +251,6 @@
 					end : function (obj) {
 						_this.isAnimate = false;
 						if(_this.stepActive){
-							_this.once = true;
 							//如果单步执行激活，不触发end事件
 							return false;
 						};
@@ -265,17 +261,15 @@
 						})() : (function(){
 							_this.current = 0;
 							if( _this.data.status !== 'pause' && _this.infinite){
-								_this.replay();
-							}else{
-								_this.once = true; //一次循环结束
+								_this.play();
 							};
 						})();
 					}
 				}
 			})();
 			
-			_this.extend(function(){
-				return {
+			_this.extend(
+				{
 					toggle : function (speed) {
 						if (_this.isAnimate) {
 							return false;
@@ -326,7 +320,7 @@
 						_this._act({height:this.oHeight},speed,callback);
 					}
 				}
-			});
+			);
 		},
 		_act : function (style,speed,callback) {
 			var _this = this;
@@ -342,9 +336,9 @@
 		},
 		_initData : function () {
 			this.current = 0;
-			this.once = false;
 			this.finalStyle = null;
 			this.stepActive = false; //关闭单步执行
+			this.infinite = false; //循环关闭
 			this.data.status = '';
 		},
 		_initStyle : function (obj, start) {
@@ -440,6 +434,7 @@
 			_this._move(obj);
 		},
 		_move : function (obj) {
+			this.isAnimate = true; //动画开始
 			if(Unit.css3){
 				this._transition(obj, obj.remainderTime, obj.easing);
 				this._css(obj.endStyle); //继续动画
@@ -568,10 +563,8 @@
 			};
 			return num.match(/em/) ? parseInt(num,10) * _this.options.em2px : parseInt(num,10) ;
 		},
-		extend : function (fn) {
-			var obj;
-			if(fn && typeof fn === 'function'){
-				obj = fn(this);
+		extend : function (obj) {
+			if(obj && typeof obj === 'object'){
 				for(var attr in obj){
 					if(!this.hasOwnProperty(attr)){
 						Jwalk.prototype[attr] = obj[attr];
