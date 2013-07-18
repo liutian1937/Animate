@@ -36,58 +36,69 @@
 		<!--main start-->
 		<div class="pure-u" id="main">
 			
-			<div class="pure-g-r  hgroup sansfont">
+			<div class="pure-g-r header sansfont">
 				<div class="pure-u-1">
-					<h1>Jwalk</h1>
-					<h2>Jwalk - JavaScript Animation Library . Smaller , Faster , Stronger</h2>
-					<p>
-						<a class="pure-button pure-button-primary" href="#">Get Start</a>
-						<a class="pure-button" href="#">View Source On Github</a>
-					</p>
-				</div>
-				<div class="pure-u-3-4">
-					<pre class="sansfont">&lt;link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.2.1/pure-min.css"&gt;</pre>
+					<h1>Jwalk(element, params)</h1>
+					<p>Jwalk - JavaScript Animation Library . Smaller , Faster , Stronger</p>
 				</div>
 			</div>
 			
 			<div class="pure-g-r">
-				<div class="pure-u-1 heifont content">
+				<div class="pure-u-1 sansfont content">
 					
 					<div class="padding-box">
-						<h3>Jwalk是用来做什么的？</h3>
-						<p>前端开发过程中经常会用到一些动画效果，比如某个div的放大，缩小，左右移动，实现这些效果都是通过Js设置元素的style样式，我们可能会借助Jquery或者其他脚本库提供的动画接口来更容易的实现相关效果。但是如果我们可能只会用到Jquery的动画效果，以及一些简单的选择器，那么（在天朝）加载这个脚本库就显得多余了。为什么在天朝就多余，国内的网络环境与网速是：你懂得！所以为了适应国情，封装了这个Mini版的动画库-Jwalk(名字可轻喷)，Min压缩版+Gzip=2K</p>
-						<p>动画执行的方式采用Css3/Js Tween算法相结合的方式，对于高级浏览器采用css3执行动画效果，不支持css3的采用tween公式计算，默认集成了（linear，ease-in，ease-out，ease-in-out）四种动画效果，如果需要更多效果，可以参考Tween获取公式。</p>
+						<h3>Jwalk初始化</h3>
+						<div class="intro">
+							<p>为了减小学习成本，Jwalk的参数采用同Jquery相同的写法，并支持链式操作。如<code>Jwalk(elem).animate().play();</code></p>
+							<p>初始化Jwalk需要两个参数，<br/>
+								第一个是Element对象（<span class="red">参数必须</span>），可通过<code>document.getElementById(id)</code>获取;<br/>
+								第二个参数是修改初始化的默认设置（<span>参数可选</span>），可设置选项：
+							</p>
+							<ul>
+								<li>isProcess : false, //是否开启时时进程，消耗性能，默认关闭</li>
+								<li>easing : 'ease-in', //默认动画效果</li>
+								<li>em2px : 16 ,//em与px转换单位，默认1em = 16px</li>
+								<li>interval : 0 //两个animate动画之间的时间间隔</li>
+							</ul>
+							<h4>Code：</h4>
+<pre>
+var elem = document.getElementById('animate');
+Jwalk(elem,{
+    isProcess : true,
+    easing : 'linear',
+    em2px : 10,
+    interval : 400
+});
+//如果采用默认设置的话直接
+Jwalk(elem)
+</pre>
+							<p>不同与Jquery的地方是，jquery直接定义animate即可执行动画，Jwalk需要定义animate之后执行<code>play()</code>动画才会执行。建议初始化的时候进行animate定义。实现控制部分与初始化分离，初始化animate后，可以通过<code>step()</code>设置执行顺序，step参数从0开始</p>
+						</div>
 					</div>
 					
 					<div class="pure-g-r">
-						<div class="pure-u-1-3">
+						<div class="pure-u-1-2">
 							<div class="padding-box">
-								<h4>普通属性：</h4>
+								<h4>可执行的方法：</h4>
 								<ul>
-									<li>多浏览器兼容，IE6-10，Ghrome，Firefox，Safari，Opera</li>
-									<li>支持CSS3的浏览器采用CSS3的Transition实现动画，效果更流畅</li>
-									<li>支持定义多个连续动画，支持按照自定义的动画顺序执行</li>
-									<li>常用动画，hide/show/toggle(显隐)，slideUp/slideDown/slideToggle(上下滚)</li>
+									<li><code><a href="animate.html">animate(样式,时间,动画效果,回调函数)</a></code>：定义动画步骤，以及内容，默认按照animate定义顺序执行动画</li>
+									<li><code><a href="play.html">play()</a></code>：播放动画</li>
+									<li><code><a href="pause.html">pause()</a></code>：暂停动画</li>
+									<li><code><a href="pause.html">replay()</a></code>：<span class="red">从当前位置</span>重新播放动画，不会继续原来的动画</li>
+									<li><code><a href="pause.html">cycle(循环次数/非必须)</a></code>：循环动画，一次play完全执行代表一次循环，无参数代表无限循环</li>
+									<li><code><a href="p.html">step(顺序/或者第几个动画)</a></code>：按照自定义顺序（animate定义的顺序）执行，或者执行固定的第几个动画</li>
+									<li><code><a href="pause.html">reset()</a></code>：重置动画，Element对象的样式也会重置到最后一次重写animate的时候</li>
+									<li><code><a href="pause.html">extend(哈希表)</a></code>：</li>
 								</ul>
 							</div>
-						</div><div class="pure-u-1-3">
+						</div><div class="pure-u-1-2">
 							<div class="padding-box">
-								<h4>文艺属性：</h4>
+								<h4>回调数据以及监听：</h4>
 								<ul>
 									<li>animate修改CSS样式，支持数学运算符"+","-","+=","-="</li>
 									<li>定义速度，动画执行方式Tween，以及回调，animate(样式,速度,效果,回调) </li>
 									<li>普通控制：play(开始)，pause(暂停)，replay(重新开始)，reset(还原)</li>
 									<li>高级控制：cycle(动画循环/次数)，step(按照顺序执行/执行第N个动画)</li>
-								</ul>
-							</div>
-						</div><div class="pure-u-1-3">
-							<div class="padding-box">
-								<h4>屌丝属性：</h4>
-								<ul>
-									<li>支持EM->PX的转换，可以定义换算单位，默认16，即1em = 16px </li>
-									<li>增加Extend扩展函数，可以根据需求添加自定义动画</li>
-									<li>每个animate都有回调，并支持状态监测，start/pause/process/end</li>
-									<li>process进程，有开关，默认关闭，动画执行时回调当前CSS的属性值</li>
 								</ul>
 							</div>
 						</div>

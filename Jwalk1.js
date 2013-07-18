@@ -1,9 +1,4 @@
-﻿/*
-	Description : Jwalk - JavaScript Animation Library
-	Author : ok8008@yeah.net
-	Link : 
-*/
-(function () {
+﻿(function () {
 	var Unit = (function () {
 		var style = document.documentElement.style, self = {};
 		//each函数，封装for循环
@@ -60,9 +55,8 @@
 				fast : 200 ,
 				slow : 600
 			}, //默认的动画执行时间
-			easing : 'ease-in', //默认动画效果
-			em2px : 16 ,//em与px转换单位，默认1em = 16px
-			interval : 0 //两个animate动画之间的时间间隔
+			easing : 'ease-in', //默认动作
+			em2px : 16 //em与px转换单位，默认1em = 16px
 		};
 		
 		if(params && typeof params == 'object'){
@@ -175,16 +169,14 @@
 			};
 			this.isAnimate = false;
 			obj = this.newStepArray[this.current];
-			
+			clearInterval(this.timer); //停止计时器
 			if( obj.remainderTime > 0 ){
 				if(Unit.css3){
 					for (var attr in obj.startStyle){
 						elem.style[attr] = this._getStyle(elem, attr);
 					};
-					clearInterval(this.timer); //停止计时器
 				}else{
 					this._compute(obj, obj.endStyle);
-					clearTimeout(this.timer);//停止计时器
 				}
 			};
 			
@@ -231,15 +223,10 @@
 				this.elem.style[attr] = this.beginStyle[attr];
 			};
 		},
-		cycle : function (times) {
+		cycle : function () {
 			//循环动画
 			this.stepActive = false; //关闭单步执行
-			this.times = times || null;
-			if(times && typeof times === 'number'){
-				this.times = times - 1;
-			}else{
-				this.infinite = true; //无限循环
-			}
+			this.infinite = true; //可以循环
 			this.play();
 			//return this; //链式调用
 		},
@@ -267,33 +254,14 @@
 						};
 						(_this.current < _this.total - 1) ? (function(){
 							_this.current += 1;
-							if(_this.data.status !== 'pause'){
-								_this.control.delay();
-							}
+							if(_this.data.status !== 'pause')
+							_this.play();
 						})() : (function(){
 							_this.current = 0;
-							if( _this.data.status !== 'pause'){
-								if(_this.infinite || _this.times){
-									if(_this.times){
-										_this.times -= 1;
-									};
-									_this.control.delay();
-								};
+							if( _this.data.status !== 'pause' && _this.infinite){
+								_this.play();
 							};
 						})();
-					},
-					delay : function () {
-						//如果有动画时间间隔，多长时间后执行
-						if(_this.options.interval){
-							if(_this.interval){
-								clearTimeout(_this.interval);
-							};
-							_this.interval = setTimeout(function(){
-								_this.play();
-							},_this.options.interval);
-						}else{
-							_this.play();
-						};
 					}
 				}
 			})();
@@ -535,7 +503,7 @@
 							}
 						};
 					};
-					_this.timer = setTimeout(Run, 10);
+					
 					
 					if (_this.options.isProcess) {
 						_this.control.process(obj); //进程执行中...
@@ -554,7 +522,7 @@
 							styles[k] = end[k];
 						}
 					};
-					clearTimeout(_this.timer); //清除计时器
+					clearInterval(_this.timer); //清除计时器
 					
 					_this.data.status = 'end';
 					obj.callback(_this.data);
@@ -563,7 +531,7 @@
 				obj.remainderTime = (obj.remainderTime > 0) ? obj.remainderTime - 10 : 0 ; //剩余时间递减				
 				//console.log(_this.remainderTime); //调试选项，打印剩余时间
 			};
-			Run();
+			_this.timer = setInterval(Run, 10);
 		},
 		_getStyle : function (elem, attr) {
 			return (elem.currentStyle? elem.currentStyle : window.getComputedStyle(elem, null))[attr];
