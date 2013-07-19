@@ -84,6 +84,7 @@
 			this.beginStyle = {}; //动画开始的样式
 			this.finalStyle = null; //每次执行的最终结果
 			this.played = true;//是否play过，默认为true，方便第一次初始化
+			return this;
 		},
 		animate : function () {
 			/*
@@ -167,6 +168,7 @@
 			}else{
 				this._initStyle(obj, this.finalStyle);
 			};
+			this.stoped = false;
 		},
 		pause : function () {
 			var obj, elem = this.elem;
@@ -191,6 +193,9 @@
 			//暂停回调
 			this.data.status = 'pause';
 			obj.callback(this.data);
+		},
+		stop : function () {
+			this.stoped = true;
 		},
 		step : function () {
 			//返回第num个动作
@@ -289,9 +294,15 @@
 								clearTimeout(_this.interval);
 							};
 							_this.interval = setTimeout(function(){
+								if(_this.stoped){
+									return false;
+								};
 								_this.play();
 							},_this.options.interval);
 						}else{
+							if(_this.stoped){
+								return false;
+							};
 							_this.play();
 						};
 					}
@@ -308,7 +319,9 @@
 						_this.show(speed) :
 						_this.hide(speed) ;
 					},
-					hide : function (speed, callback) {
+					hide : function () {
+						var speed = (arguments.length > 0 && typeof arguments[0] != 'function') ? arguments[0] : 'normal',
+							callback = ( arguments.length > 0 ) ? arguments[arguments.length-1] : null;
 						_this._act({opacity:'0'},speed,function(){
 							_this.elem.style.display = 'none';
 							if(callback && typeof callback === 'function'){
@@ -316,7 +329,9 @@
 							};
 						});
 					},
-					show : function (speed, callback) {
+					show : function () {
+						var speed = (arguments.length > 0 && typeof arguments[0] != 'function') ? arguments[0] : 'normal',
+							callback = ( arguments.length > 0 ) ? arguments[arguments.length-1] : null;
 						_this._css({
 							'display' : 'block',
 							'opacity' : '0',
@@ -332,7 +347,9 @@
 						_this.slideDown(speed) :
 						_this.slideUp(speed) ;
 					},
-					slideUp : function (speed, callback) {
+					slideUp : function () {
+						var speed = (arguments.length > 0 && typeof arguments[0] != 'function') ? arguments[0] : 'normal',
+							callback = ( arguments.length > 0 ) ? arguments[arguments.length-1] : null;
 						_this._act({height:'1px'},speed,function(){
 							_this.elem.style.display = 'none';
 							if(callback && typeof callback === 'function'){
@@ -340,7 +357,9 @@
 							};
 						});
 					},
-					slideDown : function (speed, callback) {
+					slideDown : function () {
+						var speed = (arguments.length > 0 && typeof arguments[0] != 'function') ? arguments[0] : 'normal',
+							callback = ( arguments.length > 0 ) ? arguments[arguments.length-1] : null;
 						this.oHeight = this.oHeight || _this._offset(_this.elem,'Height')+'px';
 						_this._css({
 							'display' : 'block',
