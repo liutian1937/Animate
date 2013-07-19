@@ -15,20 +15,17 @@
 				<a href="index.html" class="pure-menu-heading">Jwalk</a>
 				<ul>
 					<li class="pure-menu-selected"><a href="start.html">Jwalk(element)</a></li>
-					<li><a href="animate.html">.animate()</a></li>
-					<li><a href="play.html">.play()</a></li>
-					<li><a href="pause.html">.pause()</a></li>
-					<li><a href="pause.html">.stop()</a></li>
-					<li><a href="step.html">.step()</a></li>
-					<li><a href="replay.html">.replay()</a></li>
-					<li><a href="reset.html">.reset()</a></li>
-					<li><a href="cycle.html">.cycle()</a></li>
-					<li><a href="extend.html">.extend()</a></li>
-					<li class="pure-menu-selected"><a href="javascript:;">Animation</a></li>
-					<li><a href="toggle.html">.toggle()</a></li>
-					<li><a href="hideshow.html">.hide/show()</a></li>
-					<li><a href="slidetoggle.html">.slideToggle()</a></li>
-					<li><a href="slide.html">.slideUp/Down()</a></li>
+					<li><a href="method.html#animate">.animate()</a></li>
+					<li><a href="method.html#play">.play/replay()</a></li>
+					<li><a href="method.html#pause">.pause/stop()</a></li>
+					<li><a href="method.html#reset">.reset()</a></li>
+					<li><a href="method.html#step">.step/cycle()</a></li>
+					<li><a href="method.html#toggle">.toggle/hide/show()</a></li>
+					<li><a href="method.html#slide">.slideUp/Down()</a></li>
+					<li><a href="method.html#extend">.extend()</a></li>
+				</ul>
+				<ul>
+					<li><a href="demo.html">Demos</a></li>
 				</ul>
 			</div>
 			
@@ -57,7 +54,8 @@
 					<div class="padding-box">
 						<h3>Jwalk是用来做什么的？</h3>
 						<p>前端开发过程中经常会用到一些动画效果，比如某个div的放大，缩小，左右移动，实现这些效果都是通过Js设置元素的style样式，我们可能会借助Jquery或者其他脚本库提供的动画接口来更容易的实现相关效果。但是如果我们可能只会用到Jquery的动画效果，以及一些简单的选择器，那么（在天朝）加载这个脚本库就显得多余了。为什么在天朝就多余，国内的网络环境与网速是：你懂得！所以为了适应国情，封装了这个Mini版的动画库-Jwalk(名字可轻喷)，Min压缩版+Gzip=2K</p>
-						<p>动画执行的方式采用Css3/Js Tween算法相结合的方式，对于高级浏览器采用css3执行动画效果，不支持css3的采用tween公式计算，默认集成了（linear，ease-in，ease-out，ease-in-out）四种动画效果，如果需要更多效果，可以参考Tween获取公式。</p>
+						<p>动画执行的方式采用Css3/Js Tween算法相结合的方式，对于高级浏览器采用css3执行动画效果，不支持css3的采用缓动函数，默认集成了（linear，ease-in，ease-out，ease-in-out）四种动画效果，如果需要更多效果，可以参考<a href="http://easings.net/zh-cn" target="_blank">Easing functions</a>，<a href="http://www.gizma.com/easing/" target="_blank">Easing Equations</a>，<a href="http://www.cnblogs.com/cloudgamer/archive/2009/01/06/Tween.html" target="_blank">JavaScript Tween算法及缓动效果</a>。</p>
+						<p>Jwalk未压缩版本有粗糙的注释，大家可以扩展功能后自行压缩，欢迎尽情蹂躏。</p>
 					</div>
 					
 					<div class="pure-g-r">
@@ -96,16 +94,11 @@
 					
 					<div class="pure-g-r">
 						<div class="pure-u-1-2">
-							<div class="padding-box">
+							<div class="padding-box" style="overflow:hidden;">
 								
-								<div class="pure-u">
-									<ul id="animate">
-										<li class="green"></li>
-										<li class="blue"></li>
-										<li class="red"></li>
-										<li class="purple"></li>
-									</ul>
-								</div>
+									<div id="animate" class="pure-u">
+										<div class="green pure-u"></div><div class="blue pure-u"></div><div class="red pure-u"></div><div class="purple pure-u"></div>
+									</div>
 								
 							</div>
 						</div><div class="pure-u-1-2">
@@ -152,6 +145,11 @@
 		</div>
 		<!--main end-->
 	</div>
-<script type="text/script" src="Jwalk.min.js"></script>
+
+<script type="text/javascript" src="Jwalk.js"></script>
+<script>
+var elem = document.getElementById('animate');
+Jwalk(elem,{interval:5000}).animate({marginLeft:'-100%'},1000).animate({marginLeft:'-200%'},1000).animate({marginLeft:'-300%'},1000).animate({marginLeft:'0%'},1000).play();
+</script>
 </body>
 </html>

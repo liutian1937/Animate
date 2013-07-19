@@ -54,7 +54,7 @@
 		};
 		this.elem = elem || {};
 		this.options = {
-			isProcess : false, //是否开启时时进程，消耗性能，默认关闭
+			openProcess : false, //是否开启时时进程，消耗性能，默认关闭
 			speeds : {
 				normal : 400 ,
 				fast : 200 ,
@@ -311,13 +311,13 @@
 			
 			_this.extend(
 				{
-					toggle : function (speed) {
+					toggle : function () {
 						if (_this.isAnimate) {
 							return false;
 						};
 						(_this._getStyle(_this.elem, 'display') === 'none') ?
-						_this.show(speed) :
-						_this.hide(speed) ;
+						_this.show(arguments) :
+						_this.hide(arguments) ;
 					},
 					hide : function () {
 						var speed = (arguments.length > 0 && typeof arguments[0] != 'function') ? arguments[0] : 'normal',
@@ -339,13 +339,13 @@
 						});
 						_this._act({opacity:'1'},speed,callback);
 					},
-					slideToggle : function (speed) {
+					slideToggle : function () {
 						if (_this.isAnimate) {
 							return false;
 						};
 						(_this._getStyle(_this.elem, 'height') === '0px' || _this._getStyle(_this.elem, 'display') === 'none') ?
-						_this.slideDown(speed) :
-						_this.slideUp(speed) ;
+						_this.slideDown(arguments) :
+						_this.slideUp(arguments) ;
 					},
 					slideUp : function () {
 						var speed = (arguments.length > 0 && typeof arguments[0] != 'function') ? arguments[0] : 'normal',
@@ -503,7 +503,7 @@
 				_this.isAnimate = true;
 				obj.remainderTime = (obj.remainderTime > 0) ? obj.remainderTime - 50 : 0 ; //剩余时间递减
 				
-				if (_this.options.isProcess) {
+				if (_this.options.openProcess) {
 					_this.control.process(obj); //进程执行中...
 				};
 				if(obj.remainderTime <= 0){
@@ -556,7 +556,7 @@
 					};
 					_this.timer = setTimeout(Run, 10);
 					
-					if (_this.options.isProcess) {
+					if (_this.options.openProcess) {
 						_this.control.process(obj); //进程执行中...
 					};
 					

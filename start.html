@@ -15,19 +15,17 @@
 				<a href="index.html" class="pure-menu-heading">Jwalk</a>
 				<ul>
 					<li class="pure-menu-selected"><a href="start.html">Jwalk(element)</a></li>
-					<li><a href="animate.html">.animate()</a></li>
-					<li><a href="play.html">.play()</a></li>
-					<li><a href="pause.html">.pause()</a></li>
-					<li><a href="step.html">.step()</a></li>
-					<li><a href="replay.html">.replay()</a></li>
-					<li><a href="reset.html">.reset()</a></li>
-					<li><a href="cycle.html">.cycle()</a></li>
-					<li><a href="extend.html">.extend()</a></li>
-					<li class="pure-menu-selected"><a href="javascript:;">Animation</a></li>
-					<li><a href="toggle.html">.toggle()</a></li>
-					<li><a href="hideshow.html">.hide/show()</a></li>
-					<li><a href="slidetoggle.html">.slideToggle()</a></li>
-					<li><a href="slide.html">.slideUp/Down()</a></li>
+					<li><a href="method.html#animate">.animate()</a></li>
+					<li><a href="method.html#play">.play/replay()</a></li>
+					<li><a href="method.html#pause">.pause/stop()</a></li>
+					<li><a href="method.html#reset">.reset()</a></li>
+					<li><a href="method.html#step">.step/cycle()</a></li>
+					<li><a href="method.html#toggle">.toggle/hide/show()</a></li>
+					<li><a href="method.html#slide">.slideUp/Down()</a></li>
+					<li><a href="method.html#extend">.extend()</a></li>
+				</ul>
+				<ul>
+					<li><a href="demo.html">Demos</a></li>
 				</ul>
 			</div>
 			
@@ -55,7 +53,7 @@
 								第二个参数是修改初始化的默认设置（<span>参数可选</span>），可设置选项：
 							</p>
 							<ul>
-								<li>isProcess : false, //是否开启时时进程，消耗性能，默认关闭</li>
+								<li>openProcess : false, //是否开启时时进程，消耗性能，默认关闭</li>
 								<li>easing : 'ease-in', //默认动画效果</li>
 								<li>em2px : 16 ,//em与px转换单位，默认1em = 16px</li>
 								<li>interval : 0 //两个animate动画之间的时间间隔</li>
@@ -64,7 +62,7 @@
 <pre>
 var elem = document.getElementById('animate');
 Jwalk(elem,{
-    isProcess : true,
+    openProcess : true,
     easing : 'linear',
     em2px : 10,
     interval : 400
@@ -79,51 +77,33 @@ Jwalk(elem)
 					<div class="pure-g-r">
 						<div class="pure-u-1-2">
 							<div class="padding-box">
-								<h4>可执行的方法：</h4>
+								<h4>支持的方法：</h4>
 								<ul>
-									<li><code><a href="animate.html">animate(样式,时间,动画效果,回调函数)</a></code>：定义动画步骤，以及内容，默认按照animate定义顺序执行动画</li>
-									<li><code><a href="play.html">play()</a></code>：播放动画</li>
-									<li><code><a href="pause.html">pause()</a></code>：暂停动画</li>
-									<li><code><a href="play.html">stop()</a></code>：停止动画</li>
-									<li><code><a href="pause.html">replay()</a></code>：<span class="red">从当前位置</span>重新播放动画，不会继续原来的动画</li>
-									<li><code><a href="pause.html">cycle(循环次数/非必须)</a></code>：循环动画，一次play完全执行代表一次循环，无参数代表无限循环</li>
-									<li><code><a href="p.html">step(顺序/或者第几个动画)</a></code>：按照自定义顺序（animate定义的顺序）执行，或者执行固定的第几个动画</li>
-									<li><code><a href="pause.html">reset()</a></code>：重置动画，Element对象的样式也会重置到最后一次重写animate的时候</li>
-									<li><code><a href="pause.html">extend(哈希表)</a></code>：</li>
+									<li><code><a href="method.html#animate">animate(样式,时间,动画效果,回调)</a></code>：定义动画，默认按照定义顺序执行动画，返回对象可级联</li>
+									<li><code><a href="method.html#play">play()</a></code>：播放动画</li>
+									<li><code><a href="method.html#pause">pause()</a></code>：暂停动画</li>
+									<li><code><a href="method.html#stop">stop()</a></code>：停止动画</li>
+									<li><code><a href="method.html#replay">replay()</a></code>：<span class="red">从当前位置</span>重新播放动画，不会继续原来的动画</li>
+									<li><code><a href="method.html#cycle">cycle(循环次数/非必须)</a></code>：循环动画，一次play完全执行代表一次循环，无参数代表无限循环，可级联</li>
+									<li><code><a href="method.html#step">step(顺序/或者第几个动画)</a></code>：按照自定义顺序（animate定义的顺序）执行，或者执行固定的第几个动画</li>
+									<li><code><a href="method.html#reset">reset()</a></code>：重置动画，Element对象的样式也会重置到最后一次重写animate的时候</li>
+									<li><code><a href="method.html#extend">extend(对象)</a></code>：扩展方法，可以实现自定义动画</li>
+									<li><code><a href="method.html#toggle">toggle(速度,回调)</a></code>：显示/隐藏进行切换，另外有hide/show(速度,回调)</li>
+									<li><code><a href="method.html#slidetoggle">slideToggle(速度,回调)</a></code>：显示/隐藏进行切换，另外有hide/show(速度,回调)</li>
 								</ul>
 							</div>
 						</div><div class="pure-u-1-2">
 							<div class="padding-box">
 								<h4>回调数据以及监听：</h4>
 								<ul>
-									<li>animate修改CSS样式，支持数学运算符"+","-","+=","-="</li>
-									<li>定义速度，动画执行方式Tween，以及回调，animate(样式,速度,效果,回调) </li>
-									<li>普通控制：play(开始)，pause(暂停)，replay(重新开始)，reset(还原)</li>
-									<li>高级控制：cycle(动画循环/次数)，step(按照顺序执行/执行第N个动画)</li>
+									<li>通过判断isAnimate来确定动画是否在执行中</li>
+									<li>animate的回调函数接收数据data，根据data.status判断动画状态，一共四种状态start,process,pause,end</li>
+									<li>如果设置openProcess为true的时候，data中包含即时的css样式，可以通过data.result获取</li>
 								</ul>
 							</div>
 						</div>
 					</div>
 					
-					<div class="pure-g-r">
-						<div class="pure-u-1-2">
-							<div class="padding-box">
-								<a href="demo.html">
-									<img src="css/demo.jpg" alt="Jwalk Demo">
-								</a>
-							</div>
-						</div><div class="pure-u-1-2">
-							<div class="padding-box">
-								<h4>Demo：</h4>
-								<ul>
-									<li>支持EM->PX的转换，可以定义换算单位，默认16，即1em = 16px </li>
-									<li>增加Extend扩展函数，可以根据需求添加自定义动画</li>
-									<li>每个animate都有回调，并支持状态监测，start/pause/process/end</li>
-									<li>process进程，有开关，默认关闭，动画执行时回调当前CSS的属性值</li>
-								</ul>
-							</div>
-						</div>
-					</div>
 
 					<!--bottom start-->
 					<div class="pure-g-r bottom">
